@@ -1,0 +1,24 @@
+Revision history for POE-Test-Helpers
+
+# Day/Month/Year
+
+0.05    20.10.09
+        * adding a LOT of documentation
+
+0.04    20.10.09
+        * Hooking up to events automa{t,g}ically
+        (thanks to help from perigrin [Chris Prather]
+         and the great people at #moose)
+
+        * Got the official name POE::Test::Helpers
+        (thanks to dngor [Rocco Caputo])
+
+0.03    06.10.09
+        * Supports event parameters
+
+0.02    05.10.09
+        * Added sequence ordering
+
+0.01    05.10.09
+        * Supports minimal stuff, ordering
+
