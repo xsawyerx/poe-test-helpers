@@ -158,7 +158,7 @@ __END__
 
 =head1 NAME
 
-POE::Test::Helpers - Helps you test POE easily
+POE::Test::Helpers - Testing framework for POE
 
 =head1 VERSION
 

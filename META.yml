@@ -3,7 +3,7 @@ name: POE-Test-Helpers
 version: 0.05
 author:
   - 'Sawyer <xsawyerx@cpan.org>'
-abstract: Helps you test POE easily
+abstract: Testing framework for POE
 license: perl
 resources:
   license: http://dev.perl.org/licenses/
