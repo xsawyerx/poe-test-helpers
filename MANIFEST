@@ -6,3 +6,14 @@ lib/POE/Test/Helpers.pm
 t/00-load.t
 t/pod-coverage.t
 t/pod.t
+Makefile.PL
+LICENSE
+META.yml
+t/01-order.t
+t/02-seqorder_dep.t
+t/03-seqorder_count.t
+t/04-seqorder_doubletime.t
+t/05-parameters.t
+t/06-parameters_unordered.t
+t/boilerplate.t
+
