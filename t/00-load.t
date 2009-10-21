@@ -6,4 +6,4 @@ BEGIN {
     use_ok( 'POE::Test::Helpers' );
 }
 
-diag( "Testing POE::Test::Helpers $POE::Test::Simple::VERSION, Perl $], $^X" );
+diag( "Testing POE::Test::Helpers $POE::Test::Helpers::VERSION, Perl $], $^X" );

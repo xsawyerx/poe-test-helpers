@@ -1,6 +1,6 @@
 ---
 name: POE-Test-Helpers
-version: 0.05
+version: 0.06
 author:
   - 'Sawyer <xsawyerx@cpan.org>'
 abstract: Testing framework for POE
@@ -21,7 +21,7 @@ configure_requires:
 provides:
   POE::Test::Helpers:
     file: lib/POE/Test/Helpers.pm
-    version: 0.05
+    version: 0.06
 generated_by: Module::Build version 0.35
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html

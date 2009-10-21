@@ -2,7 +2,7 @@ NAME
     POE::Test::Helpers - Testing framework for POE
 
 VERSION
-    Version 0.05
+    Version 0.06
 
 SYNOPSIS
     This module provides a Moose role to allow you to test your POE code.
@@ -153,32 +153,32 @@ AUTHOR
 BUGS
     Please report any bugs or feature requests to "bug-poe-test-simple at
     rt.cpan.org", or through the web interface at
-    <http://rt.cpan.org/NoAuth/ReportBug.html?Queue=POE-Test-Simple>. I will
-    be notified, and then you'll automatically be notified of progress on
-    your bug as I make changes.
+    <http://rt.cpan.org/NoAuth/ReportBug.html?Queue=POE-Test-Helpers>. I
+    will be notified, and then you'll automatically be notified of progress
+    on your bug as I make changes.
 
 SUPPORT
     You can find documentation for this module with the perldoc command.
 
-        perldoc POE::Test::Simple
+        perldoc POE::Test::Helpers
 
     You can also look for information at:
 
     *   RT: CPAN's request tracker
 
-        <http://rt.cpan.org/NoAuth/Bugs.html?Dist=POE-Test-Simple>
+        <http://rt.cpan.org/NoAuth/Bugs.html?Dist=POE-Test-Helpers>
 
     *   AnnoCPAN: Annotated CPAN documentation
 
-        <http://annocpan.org/dist/POE-Test-Simple>
+        <http://annocpan.org/dist/POE-Test-Helpers>
 
     *   CPAN Ratings
 
-        <http://cpanratings.perl.org/d/POE-Test-Simple>
+        <http://cpanratings.perl.org/d/POE-Test-Helpers>
 
     *   Search CPAN
 
-        <http://search.cpan.org/dist/POE-Test-Simple/>
+        <http://search.cpan.org/dist/POE-Test-Helpers/>
 
 ACKNOWLEDGEMENTS
     I owe a lot of thanks to the following people:

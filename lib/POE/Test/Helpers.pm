@@ -1,6 +1,6 @@
 package POE::Test::Helpers;
 
-our $VERSION = '0.05';
+our $VERSION = '0.06';
 
 use Carp;
 use Test::Deep         qw( cmp_bag bag );
@@ -162,7 +162,7 @@ POE::Test::Helpers - Testing framework for POE
 
 =head1 VERSION
 
-Version 0.05
+Version 0.06
 
 =head1 SYNOPSIS
 
@@ -292,14 +292,14 @@ Sawyer, C<< <xsawyerx at cpan.org> >>
 =head1 BUGS
 
 Please report any bugs or feature requests to C<bug-poe-test-simple at rt.cpan.org>, or through
-the web interface at L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=POE-Test-Simple>.  I will be notified, and then you'll
+the web interface at L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=POE-Test-Helpers>.  I will be notified, and then you'll
 automatically be notified of progress on your bug as I make changes.
 
 =head1 SUPPORT
 
 You can find documentation for this module with the perldoc command.
 
-    perldoc POE::Test::Simple
+    perldoc POE::Test::Helpers
 
 You can also look for information at:
 
@@ -307,19 +307,19 @@ You can also look for information at:
 
 =item * RT: CPAN's request tracker
 
-L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=POE-Test-Simple>
+L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=POE-Test-Helpers>
 
 =item * AnnoCPAN: Annotated CPAN documentation
 
-L<http://annocpan.org/dist/POE-Test-Simple>
+L<http://annocpan.org/dist/POE-Test-Helpers>
 
 =item * CPAN Ratings
 
-L<http://cpanratings.perl.org/d/POE-Test-Simple>
+L<http://cpanratings.perl.org/d/POE-Test-Helpers>
 
 =item * Search CPAN
 
-L<http://search.cpan.org/dist/POE-Test-Simple/>
+L<http://search.cpan.org/dist/POE-Test-Helpers/>
 
 =back
 
