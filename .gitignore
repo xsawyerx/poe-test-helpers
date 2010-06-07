@@ -1,2 +1,12 @@
 *.swp
+blib*
+Makefile
+Makefile.old
+Build
+_build*
+pm_to_blib*
+*.tar.gz
+.lwpcookies
+POE-Test-Helpers-*
+cover_db
 *~
