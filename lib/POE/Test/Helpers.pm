@@ -168,7 +168,8 @@ Version 0.06
 
 This module provides a Moose role to allow you to test your POE code.
 
-Currently it's best used with L<MooseX::POE> but L<POE::Session> code is also doable.
+Currently it's best used with L<MooseX::POE> but L<POE::Session> code is also
+doable.
 
 Perhaps a little code snippet.
 
@@ -200,7 +201,11 @@ Perhaps a little code snippet.
 
     ...
 
-Testing event-based programs is not trivial at all. There's a lot of hidden race conditions and unknown behavior afoot. Usually we separate the testing to components, subroutines and events. However, as good as it is (and it's good!), it doesn't give us the exact behavior we'll get from the application once running.
+Testing event-based programs is not trivial at all. There's a lot of hidden race
+conditions and unknown behavior afoot. Usually we separate the testing to
+components, subroutines and events. However, as good as it is (and it's good!),
+it doesn't give us the exact behavior we'll get from the application once
+running.
 
 There are also a lot of types of tests that we would want to run, such as:
 
@@ -238,47 +243,71 @@ Same thing, just without having a specific order of sets of events.
 
 This module allows to do all those things using a simple L<Moose> Role.
 
-In order to use it, you must consume the role (using I<with>) and then change the following attributes.
+In order to use it, you must consume the role (using I<with>) and then change
+the following attributes.
 
 =head1 Attributes
 
 =head2 seq_ordering
 
-This is a hash reference which sets the number of times each event can be run and/or the event that had to come first before the event could be run. That is, if you have an event "world", you can specify that "world" can only be run once, or can only be run twice. You can instead specify that "world" can only be run after a different event - "hello" - has been run.
+This is a hash reference which sets the number of times each event can be run
+and/or the event that had to come first before the event could be run. That is,
+if you have an event "world", you can specify that "world" can only be run once,
+or can only be run twice. You can instead specify that "world" can only be run
+after a different event - "hello" - has been run.
 
 Here are some examples:
 
     has '+seq_ordering' => ( default => sub { {
         hello => 1,                  # hello can only be run once
         there => ['hello'],          # there can only be run after hello
-        world => { 2 => ['hello'] }, # world has to be run twice and only after hello
+        world => { 2 => ['hello'] }, # world runs twice, only after hello
     } } );
 
-One thing to remember is that event dependencies are not direct. That is, in the above example, "world" can be run right after "there" but as long as "hello" was run sometime prior to that, it will be okay. That is, sequence ordering is not strict.
+One thing to remember is that event dependencies are not direct. That is, in the
+above example, "world" can be run right after "there" but as long as "hello" was
+run sometime prior to that, it will be okay. That is, sequence ordering is not
+strict.
 
 =head2 event_params
 
-This is a hash reference which sets the parameters each event is expecting. By default, this parameters must be consecutive. That is, if there are two sets of parameters, the first one is what's tested when the event is run for the first time and the second one will be tested when the event is run the second time. If this is troublesome for you, check the next attribute, you'll enjoy that.
+This is a hash reference which sets the parameters each event is expecting. By
+default, this parameters must be consecutive. That is, if there are two sets of
+parameters, the first one is what's tested when the event is run for the first
+time and the second one will be tested when the event is run the second time. If
+this is troublesome for you, check the next attribute, you'll enjoy that.
 
     has '+event_params' => ( default => sub { {
         goodbye => [ [ 'cruel',  'world' ] ],
         hello   => [ [ 'ironic', 'twist' ] ],
-        special => [ [ 'params', 'for', first', 'run' ], [ 'params', 'for', 'second' ] ],
+        special => [ [ 'params', 'for', first', 'run' ], [ 'more', 'params' ] ],
     } } );
 
-You'll notice one weird thing: two array refs. The reason is actually very simple. This test checks each parameter separately, so you specify sets of parameters, each set for a different run. Thus, each set is defined in an array ref. Because of this, even if you're only giving one set of params, it needs to be encapsulated in an array ref. This might change in the future, if anyone will care enough.
+You'll notice one weird thing: two array refs. The reason is actually very
+simple. This test checks each parameter separately, so you specify sets of
+parameters, each set for a different run. Thus, each set is defined in an array
+ref. Because of this, even if you're only giving one set of params, it needs to
+be encapsulated in an array ref. This might change in the future, if anyone will
+care enough.
 
 =head2 event_params_type
 
-This is a simple string which controls how the event_params will go. Meanwhile it can only be set to "ordered" and "unordered". This might change in the future or could be replaced with "event_params_ordered" boolean or something. Be warned.
+This is a simple string which controls how the event_params will go. Meanwhile
+it can only be set to "ordered" and "unordered". This might change in the future
+or could be replaced with "event_params_ordered" boolean or something. Be
+warned.
 
-Basically this means that you don't care about the order of how the parameters get there, but only that whenever the event was run, it had one of the sets of parameters.
+Basically this means that you don't care about the order of how the parameters
+get there, but only that whenever the event was run, it had one of the sets of
+parameters.
 
 =head1 METHODS
 
 =head2 order
 
-Simple ordered tests can also be done using this framework, but are less intuitive. In order to set orders of events, a method has to be run. I'm sure this will be changed, so stay tuned.
+Simple ordered tests can also be done using this framework, but are less
+intuitive. In order to set orders of events, a method has to be run. I'm sure
+this will be changed, so stay tuned.
 
     event 'example' => sub {
         my $self = $_[OBJECT];
@@ -291,9 +320,11 @@ Sawyer, C<< <xsawyerx at cpan.org> >>
 
 =head1 BUGS
 
-Please report any bugs or feature requests to C<bug-poe-test-simple at rt.cpan.org>, or through
-the web interface at L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=POE-Test-Helpers>.  I will be notified, and then you'll
-automatically be notified of progress on your bug as I make changes.
+Please report any bugs or feature requests to
+C<bug-poe-test-simple at rt.cpan.org>, or through the web interface at
+L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=POE-Test-Helpers>.  I will be
+notified, and then you'll automatically be notified of progress on your bug as I
+make changes.
 
 =head1 SUPPORT
 
@@ -339,7 +370,8 @@ Thanks for the input and ideas. Thanks for L<POE>!
 
 =item * #moose and #poe
 
-Really great people and constantly helping me with stuff, including one of the core principles in this module.
+Really great people and constantly helping me with stuff, including one of the
+core principles in this module.
 
 =back
 
