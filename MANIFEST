@@ -15,5 +15,4 @@ t/03-seqorder_count.t
 t/04-seqorder_doubletime.t
 t/05-parameters.t
 t/06-parameters_unordered.t
-t/boilerplate.t
 
