@@ -12,7 +12,7 @@ sub next  { $_[KERNEL]->yield('last') }
 sub last  {1}
 sub stop  {1}
 
-POE::Session->create(
+my $session = POE::Session->create(
     inline_states => {
         '_start' => \&start,
         'next'   => \&next,
@@ -22,7 +22,8 @@ POE::Session->create(
 );
 
 POE::Test::Helpers::Session->spawn(
-    #alias => 'tester',
+    alias        => 'tester',
+    test_session => $session,
 );
 
 POE::Kernel->run();
