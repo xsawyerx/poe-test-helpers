@@ -21,6 +21,8 @@ POE::Test::Helpers::Session->spawn(
             },
         );
     },
+
+    test_order => [ '_start', 'next', 'last', '_stop' ],
 );
 
 POE::Kernel->run();
