@@ -9,7 +9,7 @@
 
 package Session;
 
-use Test::More tests => 4;
+use Test::More tests => 5;
 use POE::Test::Helpers::Session;
 
 use POE;
@@ -30,7 +30,7 @@ POE::Test::Helpers::Session->spawn(
         );
     },
 
-    test_sequence_order => {
+    test_sequence => {
         '_start' => 1,
         'next'   => 4,
         'more'   => 4,
