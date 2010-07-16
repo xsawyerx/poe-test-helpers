@@ -37,13 +37,14 @@ sub _child {
     } elsif ( $change eq 'lose' ) {
         $self->order( -1, '_stop' );
         $self->_seq_order('_stop');
+        $self->_seq_end();
     }
 }
 
 sub _start {
     my ( $self, $kernel ) = @_[ OBJECT, KERNEL ];
     my ( $test_order, $test_sequence, $test_sequence_count ) =
-        @{$self}{qw/ test_order test_sequence test_sequence_count /};
+        @{$self}{qw/ test_order test_sequence /};
 
     # collect the keys of everyone
     # if exists key in test, add a test for it for them
@@ -55,11 +56,6 @@ sub _start {
     # continue with test_sequence
     push @subs_to_override, ref $test_sequence eq 'HASH' ?
                             keys %{$test_sequence}       :
-                            ();
-
-    # continue with test_sequence_count
-    push @subs_to_override, ref $test_sequence_count eq 'HASH' ?
-                            keys %{$test_sequence_count}       :
                             ();
 
     my $callback        = $self->{'run'};
@@ -79,11 +75,8 @@ sub _start {
             # count the order
             $self->order( $count, $sub_to_override ) and $count++;
 
-            # sequence order
+            # sequence order and sequence order count
             $self->_seq_order($sub_to_override);
-
-            # sequence order count
-            # ...
 
             goto &$old_sub;
         };
@@ -206,6 +199,21 @@ sub _seq_check_deps {
     ok( ! scalar @bad, "Correct sequence for $event" . $extra );
 
     return;
+}
+
+sub _seq_end {
+    my $self = shift;
+    # now we can check th sub counting
+    foreach my $event ( keys %{ $self->{'test_sequence'} } ) {
+        $self->{'track_seq'}->{$event}{'max'} || next;
+
+        is(
+            $self->{'track_seq'}->{$event}{'cur'},
+            $self->{'track_seq'}->{$event}{'max'},
+            "($event) Correct number of runs",
+        );
+
+    }
 }
 
 1;
