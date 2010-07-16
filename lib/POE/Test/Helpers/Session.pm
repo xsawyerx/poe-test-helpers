@@ -16,6 +16,9 @@ sub spawn {
     $opts{ lc $_ } = delete $opts{$_} for keys %opts;
     my $self       = bless { %opts }, $class;
 
+    # use some key that can have a simple boolean value
+    $self->{'event_params_type'} ||= 'ordered';
+
     $self->{'session_id'} = POE::Session->create(
         object_states => [
             $self => [ '_start', '_child' ],
