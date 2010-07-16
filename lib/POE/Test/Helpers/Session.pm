@@ -7,19 +7,8 @@ use POE::Session;
 use parent 'Test::Builder::Module';
 use namespace::autoclean;
 
+use List::AllUtils     qw( first none );
 use Test::More;
-
-sub order {
-    my ( $self, $order, $msg ) = @_;
-    my $new_order   = $order + 1;
-    my $order_count = $self->{'order_count'} || 0;
-
-    $order == -1 and $order = $order_count;
-
-    is( $order, $order_count, "($order) $msg" );
-    $self->{'order_count'} = $new_order;
-    return;
-}
 
 sub spawn {
     my ( $class, %opts ) = @_;
@@ -29,7 +18,7 @@ sub spawn {
 
     $self->{'session_id'} = POE::Session->create(
         object_states => [
-            $self => [ '_start', '_stop', '_child' ],
+            $self => [ '_start', '_child' ],
         ],
     )->ID;
 
@@ -42,16 +31,35 @@ sub _child {
     my $self   = $_[OBJECT];
     my $change = $_[ARG0];
 
-       if ( $change eq 'create' ) { $self->order(  0, '_start' ) }
-    elsif ( $change eq 'lose'   ) { $self->order( -1, '_stop'  ) }
+    if ( $change eq 'create' ) {
+        $self->order( 0, '_start' );
+        $self->_seq_order('_start');
+    } elsif ( $change eq 'lose' ) {
+        $self->order( -1, '_stop' );
+        $self->_seq_order('_stop');
+    }
 }
 
 sub _start {
     my ( $self, $kernel ) = @_[ OBJECT, KERNEL ];
+    my ( $test_order, $test_sequence, $test_sequence_count ) =
+        @{$self}{qw/ test_order test_sequence test_sequence_count /};
 
+    # collect the keys of everyone
+    # if exists key in test, add a test for it for them
     $self->{'session_id'} = $_[SESSION]->ID();
-    my @subs_to_override  = ref $self->{'test_order'} eq 'ARRAY' ?
-                            @{ $self->{'test_order'} }           :
+
+    # start with test_order
+    my @subs_to_override  = ref $test_order eq 'ARRAY' ? @{$test_order} : ();
+
+    # continue with test_sequence
+    push @subs_to_override, ref $test_sequence eq 'HASH' ?
+                            keys %{$test_sequence}       :
+                            ();
+
+    # continue with test_sequence_count
+    push @subs_to_override, ref $test_sequence_count eq 'HASH' ?
+                            keys %{$test_sequence_count}       :
                             ();
 
     my $callback        = $self->{'run'};
@@ -69,8 +77,13 @@ sub _start {
         my $old_sub = $internal_data->{$sub_to_override};
         my $new_sub = sub {
             # count the order
-            $self->order( $count, $sub_to_override );
-            $count++;
+            $self->order( $count, $sub_to_override ) and $count++;
+
+            # sequence order
+            $self->_seq_order($sub_to_override);
+
+            # sequence order count
+            # ...
 
             goto &$old_sub;
         };
@@ -79,13 +92,46 @@ sub _start {
     }
 }
 
-sub _stop {
-    my ( $self, $kernel ) = @_[ OBJECT, KERNEL ];
+sub _should_add {
+    my ( $self, $event, $test ) = @_;
+    my @test_events = ();
+
+    if ( exists $self->{$test} ) {
+        my @test_events = ();
+        if ( ref $self->{$test} eq 'HASH' ) {
+            @test_events = keys %{ $self->{$test} };
+        } elsif ( ref $self->{$test} eq 'ARRAY' ) {
+            @test_events = @{ $self->{$test} };
+        }
+
+        if ( first { $_ eq $event } @test_events ) {
+            return 1;
+        }
+    }
+
+    return;
+}
+
+# start this method with underscore as well
+sub order {
+    my ( $self, $order, $msg ) = @_;
+    my $new_order   = $order + 1;
+    my $order_count = $self->{'order_count'} || 0;
+
+    $self->_should_add( $msg, 'test_order' ) or return;
+    $order == -1 and $order = $order_count;
+
+    is( $order, $order_count, "($order) $msg" );
+    $self->{'order_count'} = $new_order;
+
+    return 1;
 }
 
 sub _seq_order {
     my ( $self, $event, @args ) = @_;
-    my $value = $self->{'seq_ordering'}{$event} || q{};
+    my $value = $self->{'test_sequence'}{$event} || q{};
+
+    $self->_should_add( $event, 'test_sequence' ) or return;
 
     # checking sequences
     if ( ref $value eq 'ARRAY' ) {
@@ -144,16 +190,23 @@ sub _seq_order {
     return;
 }
 
+sub _seq_check_deps {
+    my ( $self, $got_deps, $event ) = @_;
+    my @exp_deps = keys %{ $self->{'track_seq'} };
+    my @bad      = ();
+
+    foreach my $dep ( @{$got_deps} ) {
+        if ( none { $dep eq $_ } @exp_deps ) {
+            push @bad, $dep;
+        }
+    }
+
+    my $data  = join ', ', map { qq{"$_"} } @bad;
+    my $extra = scalar @bad ? " [$data missing]" : q{};
+    ok( ! scalar @bad, "Correct sequence for $event" . $extra );
+
+    return;
+}
+
 1;
-
-__END__
-shift @{$session};
-my $internal = $session->[SESSION]; # right?
-my $old_method = $internal->{'next'};
-my $new_method = sub {
-    print "ack?\n";
-    goto &$old_method;
-};
-
-$internal->{'next'} = $new_method;
 
