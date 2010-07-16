@@ -23,7 +23,7 @@ POE::Test::Helpers::Session->spawn(
                 next   => sub { $_[KERNEL]->yield('more') },
                 more   => sub {
                     $count++ < 3 ? $_[KERNEL]->yield('next') :
-                                   $_[KENREL]->yield('last');
+                                   $_[KERNEL]->yield('last');
                 },
                 last   => sub {1},
             },
