@@ -54,7 +54,7 @@ $helper->register_event(
 
 my %expected = (
     _start => {
-        count => 0,
+        count  => 0,
         params => [ 'hello', 'world' ],
     },
     next  => { params => [] },
