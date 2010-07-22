@@ -28,9 +28,6 @@ sub spawn {
     # use some key that can have a simple boolean value
     $self->{'event_params_type'} ||= 'ordered';
 
-    # override POE::Session's create to register_event
-
-
     $self->{'session_id'} = POE::Session->create(
         object_states => [
             $self => [ '_start', '_child' ],
@@ -79,23 +76,14 @@ sub _child {
 
     my $internals = $session->[KERNEL];
 
-    warn "CREATING _START!\n";
-    my $sub = $internals->{'_start'};
-    my $new_sub = sub {
-        warn "START!!!!\n";
+    if ( $change eq 'create' ) {
         $self->order( 0, '_start' );
         $self->_seq_order('_start');
-        goto &$sub;
-    };
-
-#    if ( $change eq 'create' ) {
-#        $self->order( 0, '_start' );
-#        $self->_seq_order('_start');
-#    } elsif ( $change eq 'lose' ) {
-#        $self->order( -1, '_stop' );
-#        $self->_seq_order('_stop');
-#        $self->_seq_end();
-#    }
+    } elsif ( $change eq 'lose' ) {
+        $self->order( -1, '_stop' );
+        $self->_seq_order('_stop');
+        $self->_seq_end();
+    }
 }
 
 sub _start {
