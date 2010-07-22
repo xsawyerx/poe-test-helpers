@@ -1,23 +1,35 @@
 package POE::Test::Helpers::Session;
 
-use strict;
-use warnings;
+use strictures 1;
+
 use Carp;
-use POE::Session;
 use parent 'Test::Builder::Module';
+use POE::Session;
+use Data::Validate 'is_integer';
 use namespace::autoclean;
 
 use List::AllUtils     qw( first none );
 use Test::More;
 
-sub spawn {
+sub new {
     my ( $class, %opts ) = @_;
 
     $opts{ lc $_ } = delete $opts{$_} for keys %opts;
     my $self       = bless { %opts }, $class;
 
+    return $self;
+}
+
+sub spawn {
+    my ( $class, %opts ) = @_;
+
+    my $self = $class->new(%opts);
+
     # use some key that can have a simple boolean value
     $self->{'event_params_type'} ||= 'ordered';
+
+    # override POE::Session's create to register_event
+
 
     $self->{'session_id'} = POE::Session->create(
         object_states => [
@@ -28,20 +40,54 @@ sub spawn {
     return $self;
 }
 
+sub register_event {
+    my ( $self, %opts ) = @_;
+
+    # must have name
+    exists $opts{'name'} && $opts{'name'} ne ''
+        or croak 'Missing event name in register_event';
+
+    # check the params and count
+    if ( exists $opts{'count'} ) {
+        defined is_integer( $opts{'count'} )
+            or croak 'Bad event count in register_event';
+    }
+
+    if ( exists $opts{'params'} ) {
+        ref $opts{'params'} eq 'ARRAY'
+            or croak 'Bad event params in register_event';
+    }
+
+
+    return 1;
+}
+
 sub _child {
     # this says that _start on our spawned session started
     # we should mark _start on our superhash
-    my $self   = $_[OBJECT];
-    my $change = $_[ARG0];
+    my $self    = $_[OBJECT];
+    my $change  = $_[ARG0];
+    my $session = $_[ARG1];
 
-    if ( $change eq 'create' ) {
+    my $internals = $session->[KERNEL];
+
+    warn "CREATING _START!\n";
+    my $sub = $internals->{'_start'};
+    my $new_sub = sub {
+        warn "START!!!!\n";
         $self->order( 0, '_start' );
         $self->_seq_order('_start');
-    } elsif ( $change eq 'lose' ) {
-        $self->order( -1, '_stop' );
-        $self->_seq_order('_stop');
-        $self->_seq_end();
-    }
+        goto &$sub;
+    };
+
+#    if ( $change eq 'create' ) {
+#        $self->order( 0, '_start' );
+#        $self->_seq_order('_start');
+#    } elsif ( $change eq 'lose' ) {
+#        $self->order( -1, '_stop' );
+#        $self->_seq_order('_stop');
+#        $self->_seq_end();
+#    }
 }
 
 sub _start {
@@ -79,7 +125,7 @@ sub _start {
             $self->order( $count, $sub_to_override ) and $count++;
 
             # sequence order and sequence order count
-            $self->_seq_order($sub_to_override);
+            $self->_seq_order( $sub_to_override, @_ );
 
             goto &$old_sub;
         };
@@ -90,7 +136,6 @@ sub _start {
 
 sub _should_add {
     my ( $self, $event, $test ) = @_;
-    my @test_events = ();
 
     if ( exists $self->{$test} ) {
         my @test_events = ();
@@ -125,9 +170,11 @@ sub order {
 
 sub _seq_order {
     my ( $self, $event, @args ) = @_;
-    my $value = $self->{'test_sequence'}{$event} || q{};
 
+    # check whether we should run _seq_order or not
     $self->_should_add( $event, 'test_sequence' ) or return;
+
+    my $value = $self->{'test_sequence'}{$event} || q{};
 
     # checking sequences
     if ( ref $value eq 'ARRAY' ) {
@@ -153,7 +200,7 @@ sub _seq_order {
     }
 
     # checking parameter
-    if ( my $event_params = $self->{'event_params'}{$event} ) {
+    if ( my $event_params = $self->{'test_event_params'}{$event} ) {
         my $current_params  = @args ? \@args : [];
 
         # event_params defined, we can check
