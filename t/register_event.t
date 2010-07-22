@@ -69,7 +69,7 @@ is_deeply(
 
 is_deeply(
     $helper->{'events_order'},
-    [ '_start', 'next', 'stop' ],
+    [ '_start', 'next', '_stop' ],
     'Correct event order',
 );
 

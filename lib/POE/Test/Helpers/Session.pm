@@ -63,6 +63,7 @@ sub register_event {
     defined $opts{'params'} and $data{'params'} = $opts{'params'};
 
     $self->{'events'}{ $opts{'name'} } = \%data;
+    push @{ $self->{'events_order'} }, $opts{'name'};
 
     return 1;
 }
@@ -77,9 +78,19 @@ sub _child {
     my $internals = $session->[KERNEL];
 
     if ( $change eq 'create' ) {
+        $self->register_event(
+            name  => '_start',
+            count => 0,
+        );
+
         $self->order( 0, '_start' );
         $self->_seq_order('_start');
     } elsif ( $change eq 'lose' ) {
+        $self->register_event(
+            name  => '_stop',
+            count => -1,
+        );
+
         $self->order( -1, '_stop' );
         $self->_seq_order('_stop');
         $self->_seq_end();
@@ -123,11 +134,21 @@ sub _start {
             # sequence order and sequence order count
             $self->_seq_order( $sub_to_override, @_ );
 
+            $self->register_event(
+                name   => $sub_to_override,
+                count  => $count,
+                params => \@_,
+            );
+
             goto &$old_sub;
         };
 
         $internal_data->{$sub_to_override} = $new_sub;
     }
+}
+
+sub _stop {
+
 }
 
 sub _should_add {
