@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 8;
+use Test::More tests => 9;
 use Test::Exception;
 
 # later change to POE::Test::Helpers
@@ -65,5 +65,11 @@ is_deeply(
     $helper->{'events'},
     \%expected,
     'register_event created correct hash',
+);
+
+is_deeply(
+    $helper->{'events_order'},
+    [ '_start', 'next', 'stop' ],
+    'Correct event order',
 );
 
