@@ -48,7 +48,7 @@ $helper->register_event(
 
 # don't check parameters
 $helper->register_event(
-    name  => 'stop',
+    name  => '_stop',
     count => 1,
 );
 
