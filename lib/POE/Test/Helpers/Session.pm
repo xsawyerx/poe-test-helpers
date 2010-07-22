@@ -58,6 +58,14 @@ sub register_event {
             or croak 'Bad event params in register_event';
     }
 
+    # currently we still allow to register events without requiring
+    # at least a count or params
+
+    my %data = ();
+    defined $opts{'count'}  and $data{'count'}  = $opts{'count'};
+    defined $opts{'params'} and $data{'params'} = $opts{'params'};
+
+    $self->{'events'}{ $opts{'name'} } = \%data;
 
     return 1;
 }
