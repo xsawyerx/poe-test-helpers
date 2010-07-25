@@ -11,6 +11,8 @@ use namespace::autoclean;
 use List::AllUtils     qw( first none );
 use Test::More;
 
+my $CLASS = __PACKAGE__;
+
 sub new {
     my ( $class, %opts ) = @_;
 
@@ -30,7 +32,7 @@ sub spawn {
 
     $self->{'session_id'} = POE::Session->create(
         object_states => [
-            $self => [ '_start', '_child' ],
+            $self => [ '_start', '_child', '_stop' ],
         ],
     )->ID;
 
@@ -44,15 +46,26 @@ sub register_event {
     exists $opts{'name'} && $opts{'name'} ne ''
         or croak 'Missing event name in register_event';
 
-    # check the params and count
+    # check the count and order
     if ( exists $opts{'count'} ) {
         defined is_integer( $opts{'count'} )
             or croak 'Bad event count in register_event';
     }
 
+    if ( exists $opts{'order'} ) {
+        defined is_integer( $opts{'order'} )
+            or croak 'Bad event order in register_event';
+    }
+
+    # check the params and deps
     if ( exists $opts{'params'} ) {
         ref $opts{'params'} eq 'ARRAY'
             or croak 'Bad event params in register_event';
+    }
+
+    if ( exists $opts{'deps'} ) {
+        ref $opts{'deps'} eq 'ARRAY'
+            or croak 'Bad event deps in register_event';
     }
 
     # currently we still allow to register events without requiring
@@ -66,6 +79,10 @@ sub register_event {
     push @{ $self->{'events_order'} }, $opts{'name'};
 
     return 1;
+}
+
+sub reached_event {
+    my ( $self, @params ) = @_;
 }
 
 sub _child {
@@ -83,17 +100,17 @@ sub _child {
             count => 0,
         );
 
-        $self->order( 0, '_start' );
-        $self->_seq_order('_start');
+#        $self->order( 0, '_start' );
+#        $self->_seq_order('_start');
     } elsif ( $change eq 'lose' ) {
         $self->register_event(
             name  => '_stop',
             count => -1,
         );
 
-        $self->order( -1, '_stop' );
-        $self->_seq_order('_stop');
-        $self->_seq_end();
+#        $self->order( -1, '_stop' );
+#        $self->_seq_order('_stop');
+#        $self->_seq_end();
     }
 }
 
@@ -129,14 +146,14 @@ sub _start {
         my $old_sub = $internal_data->{$sub_to_override};
         my $new_sub = sub {
             # count the order
-            $self->order( $count, $sub_to_override ) and $count++;
+            #$self->order( $count, $sub_to_override ) and $count++;
 
             # sequence order and sequence order count
-            $self->_seq_order( $sub_to_override, @_ );
+            #$self->_seq_order( $sub_to_override, @_ );
 
             $self->register_event(
                 name   => $sub_to_override,
-                count  => $count,
+                count  => $count++,
                 params => \@_,
             );
 

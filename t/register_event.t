@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 9;
+use Test::More tests => 13;
 use Test::Exception;
 
 # later change to POE::Test::Helpers
@@ -27,11 +27,23 @@ throws_ok { $helper->register_event( name => 'a', count => 'z' ) }
 throws_ok { $helper->register_event( name => 'a', count => '' ) }
     qr/^Bad event count in register_event/, 'Empty count';
 
+# got non-digit order
+throws_ok { $helper->register_event( name => 'a', order => 'z' ) }
+    qr/^Bad event order in register_event/, 'Non-digit order';
+throws_ok { $helper->register_event( name => 'a', order => '' ) }
+    qr/^Bad event order in register_event/, 'Empty order';
+
 # got non-arrayref params
 throws_ok { $helper->register_event( name => 'a', params => {} ) }
     qr/^Bad event params in register_event/, 'Odd params';
 throws_ok { $helper->register_event( name => 'a', params => '' ) }
     qr/^Bad event params in register_event/, 'Empty params';
+
+# got non-arrayref deps
+throws_ok { $helper->register_event( name => 'a', deps => {} ) }
+    qr/^Bad event deps in register_event/, 'Odd deps';
+throws_ok { $helper->register_event( name => 'a', deps => '' ) }
+    qr/^Bad event deps in register_event/, 'Empty deps';
 
 # typical syntax
 $helper->register_event(
