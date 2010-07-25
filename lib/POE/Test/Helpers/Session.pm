@@ -87,23 +87,47 @@ sub register_event {
 
 sub check_event {
     my ( $self, $event ) = @_;
+
+    # check count
+    $self->check_count($event);
+
+}
+
+sub check_count {
+    my ( $self, $event ) = @_;
     my $tb      = $CLASS->builder;
     my %ev_data = %{ $self->{'events'}{$event} };
 
-    # check count
-    my $count = $self->{'count'};
-    $count and
-        $tb->cmp_ok( $ev_data{'count'}, '==', $count, "($count) $event" );
+    my $count = $ev_data{'count'};
+    defined $count and
+        $tb->cmp_ok( $self->{'count'}++, '==', $count, "($count) $event" );
 
-    # check order
-    my $order = $self->{'order'};
-    if ($order) {
-        $order == -1 and $order = $self->{'order_count'};
+    return 1;
+}
 
-        $tb->cmp_ok( $ev_data{'order'}, '==', $order++, "($order) $event" );
+sub check_order_all_events {
+    my $self = shift;
 
-        $self->{'order_count'} = $order;
+    foreach my $test ( keys %{ $self->{'tests'} } ) {
+        $self->check_order($test);
     }
+
+    return 1;
+}
+
+sub check_order {
+    my ( $self, $event ) = @_;
+    my $tb      = $CLASS->builder;
+    my %ev_data = %{ $self->{'events'}{$event} };
+
+    my $order = $ev_data{'order'};
+    if ( defined $order ) {
+        $order == -1 and $order = $self->{'order'};
+
+        $tb->cmp_ok( $self->{'order'}++, '==', $order, "($order) $event" );
+    }
+
+    return 1;
 }
 
 sub _child {
@@ -118,20 +142,16 @@ sub _child {
     if ( $change eq 'create' ) {
         $self->register_event(
             name  => '_start',
-            count => 0,
+            order => 0,
         );
-
-#        $self->order( 0, '_start' );
-#        $self->_seq_order('_start');
     } elsif ( $change eq 'lose' ) {
         $self->register_event(
             name  => '_stop',
-            count => -1,
+            order => -1,
         );
 
-#        $self->order( -1, '_stop' );
-#        $self->_seq_order('_stop');
-#        $self->_seq_end();
+        # check order
+        $self->check_order_all_events();
     }
 }
 
@@ -178,8 +198,8 @@ sub _start {
 
             $self->register_event(
                 name   => $sub_to_override,
-                count  => $count++,
-                params => \@_,
+                order  => $count++,
+                params => [ ARG0 .. $#_ ],
             );
 
             goto &$old_sub;
