@@ -23,10 +23,10 @@ POE::Test::Helpers::Session->spawn(
     },
 
     tests => {
-        '_start' => 0,
-        'next'   => 1,
-        'last'   => 2,
-        '_stop'  => 3,
+        '_start' => { order => 0 },
+        'next'   => { order => 1 },
+        'last'   => { order => 2 },
+        '_stop'  => { order => 3 },
     },
 );
 
