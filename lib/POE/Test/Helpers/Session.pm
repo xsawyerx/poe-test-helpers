@@ -73,7 +73,9 @@ sub register_event {
 
     my %data = ();
     defined $opts{'count'}  and $data{'count'}  = $opts{'count'};
+    defined $opts{'order'}  and $data{'order'}  = $opts{'order'};
     defined $opts{'params'} and $data{'params'} = $opts{'params'};
+    defined $opts{'deps'}   and $data{'deps'}   = $opts{'deps'};
 
     $self->{'events'}{ $opts{'name'} } = \%data;
     push @{ $self->{'events_order'} }, $opts{'name'};
