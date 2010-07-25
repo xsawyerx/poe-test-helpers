@@ -78,13 +78,32 @@ sub register_event {
     defined $opts{'deps'}   and $data{'deps'}   = $opts{'deps'};
 
     $self->{'events'}{ $opts{'name'} } = \%data;
-    push @{ $self->{'events_order'} }, $opts{'name'};
+
+    $self->check_event( $opts{'name'} );
+    #push @{ $self->{'events_order'} }, $opts{'name'};
 
     return 1;
 }
 
-sub reached_event {
-    my ( $self, @params ) = @_;
+sub check_event {
+    my ( $self, $event ) = @_;
+    my $tb      = $CLASS->builder;
+    my %ev_data = %{ $self->{'events'}{$event} };
+
+    # check count
+    my $count = $self->{'count'};
+    $count and
+        $tb->cmp_ok( $ev_data{'count'}, '==', $count, "($count) $event" );
+
+    # check order
+    my $order = $self->{'order'};
+    if ($order) {
+        $order == -1 and $order = $self->{'order_count'};
+
+        $tb->cmp_ok( $ev_data{'order'}, '==', $order++, "($order) $event" );
+
+        $self->{'order_count'} = $order;
+    }
 }
 
 sub _child {
@@ -132,6 +151,10 @@ sub _start {
     push @subs_to_override, ref $test_sequence eq 'HASH' ?
                             keys %{$test_sequence}       :
                             ();
+
+
+    # XXX: NEW
+    @subs_to_override = keys %{ $self->{'tests'} };
 
     my $callback        = $self->{'run'};
     my $session_to_test = $callback->();
