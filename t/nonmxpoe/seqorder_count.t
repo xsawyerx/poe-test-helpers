@@ -30,12 +30,12 @@ POE::Test::Helpers::Session->spawn(
         );
     },
 
-    test_sequence => {
-        '_start' => 1,
-        'next'   => 4,
-        'more'   => 4,
-        'last'   => 1,
-        '_stop'  => 1,
+    tests => {
+        '_start' => { count => 1 },
+        'next'   => { count => 4 },
+        'more'   => { count => 4 },
+        'last'   => { count => 1 },
+        '_stop'  => { count => 1 },
     },
 );
 

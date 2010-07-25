@@ -25,9 +25,9 @@ POE::Test::Helpers::Session->spawn(
         );
     },
 
-    test_event_params => {
-        'next' => [ [ 'hello', 'world' ], ['goodbye'] ],
-        'more' => [],
+    tests => {
+        'next' => { params => [ [ 'hello', 'world' ], ['goodbye'] ] },
+        'more' => { params => [] },
     },
 );
 

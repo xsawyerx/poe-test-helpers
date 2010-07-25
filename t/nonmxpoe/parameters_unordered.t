@@ -25,10 +25,10 @@ POE::Test::Helpers::Session->spawn(
         );
     },
 
-    event_params_type => 'unordered',
-    test_event_params => {
-        'next' => [ [ 'hello', 'world' ], ['goodbye'] ],
-        'more' => [ [] ],
+    params_type => 'unordered',
+    tests => {
+        'next' => { params => [ [ 'hello', 'world' ], ['goodbye'] ] },
+        'more' => { params => [ [] ] },
     },
 );
 

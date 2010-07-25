@@ -32,12 +32,23 @@ POE::Test::Helpers::Session->spawn(
         );
     },
 
-    test_sequence => {
-        '_start' => 1,
-        'next'   => [ '_start' ],
-        'more'   => { 4 => [ '_start', 'next'                 ] },
-        'last'   => { 1 => [ '_start', 'next', 'more'         ] },
-        '_stop'  => { 1 => [ '_start', 'next', 'more', 'last' ] },
+    tests => {
+        '_start' => { count => 1          },
+        'next'   => { deps  => ['_start'] },
+        'more'   => {
+            count => 4,
+            deps  => [ '_start', 'next' ],
+        },
+
+        'last'   => {
+            count => 1,
+            deps  => [ '_start', 'next', 'more' ],
+        },
+
+        '_stop'  => {
+            count => 1,
+            deps  => [ '_start', 'next', 'more', 'last' ],
+        },
     },
 );
 
