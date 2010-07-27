@@ -1,6 +1,5 @@
 package POE::Test::Helpers;
-
-our $VERSION = '0.06';
+# ABSTRACT: Testing framework for POE
 
 use Carp;
 use Test::Deep         qw( cmp_bag bag );
@@ -155,14 +154,6 @@ no Moose::Role;
 1;
 
 __END__
-
-=head1 NAME
-
-POE::Test::Helpers - Testing framework for POE
-
-=head1 VERSION
-
-Version 0.06
 
 =head1 SYNOPSIS
 
