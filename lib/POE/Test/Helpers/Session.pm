@@ -44,6 +44,8 @@ sub reached_event {
     my ( $name, $count, $order, $params, $deps ) =
         @opts{ qw/ name count order params deps / };
 
+    my $ev_data = $self->{'tests'}{$name};
+
     # currently we still allow to register events without requiring
     # at least a count or params
 
@@ -52,32 +54,31 @@ sub reached_event {
         or croak 'Missing event name in reached_event';
 
     # add the event to the list of events
-    push @{ $self->{'events_order'} }, $opts{'name'};
+    push @{ $self->{'events_order'} }, $name;
 
     # check the count and order
     if ( defined $count ) {
-        defined is_integer($count) or croak 'Bad event count in reached_event';
-
         # XXX count is only tested in the last run
+        defined is_integer($count) or croak 'Bad event count in reached_event';
     }
 
     if ( defined $order ) {
         defined is_integer($order) or croak 'Bad event order in reached_event';
 
-        $self->check_order( $opts{'name'}, $opts{'order'} );
+        defined $ev_data->{'order'} && $self->check_order( $name, $order );
     }
 
     # check the params and deps
     if ( defined $params ) {
         ref $params eq 'ARRAY' or croak 'Bad event params in reached_event';
 
-        $self->check_params( $opts{'name'}, $opts{'params'} );
+        defined $ev_data->{'params'} && $self->check_params( $name, $params );
     }
 
     if ( defined $deps ) {
         ref $deps eq 'ARRAY' or croak 'Bad event deps in reached_event';
 
-        $self->check_deps( $opts{'name'}, $opts{'deps'} );
+        defined $ev_data->{'deps'} && $self->check_deps( $name, $deps );
     }
 
     return 1;
@@ -94,13 +95,11 @@ sub check_deps {
 }
 
 sub check_count {
-    my ( $self, $event ) = @_;
-    my $tb      = $CLASS->builder;
-    my %ev_data = %{ $self->{'events'}{$event} };
+    my ( $self, $event, $count ) = @_;
+    my $tb = $CLASS->builder;
 
-    my $count = $ev_data{'count'};
-    defined $count and
-        $tb->cmp_ok( $self->{'count'}++, '==', $count, "($count) $event" );
+    my $count_from_event = grep /^$event$/, @{ $self->{'events_order'} };
+    $tb->is_num( $count_from_event, $count, "$event ran $count times" );
 
     return 1;
 }
@@ -151,6 +150,15 @@ sub _child {
             name  => '_stop',
             order => $order,
         );
+
+        # checking the count
+        foreach my $test ( keys %{ $self->{'tests'} } ) {
+            my $ev_data = $self->{'tests'}{$test};
+
+            if ( exists $ev_data->{'count'} ) {
+                $self->check_count( $test, $ev_data->{'count'} );
+            }
+        }
     }
 }
 
