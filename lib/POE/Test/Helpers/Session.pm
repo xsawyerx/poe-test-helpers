@@ -39,7 +39,7 @@ sub spawn {
     return $self;
 }
 
-sub register_event {
+sub reached_event {
     my ( $self, %opts ) = @_;
 
     # must have name
