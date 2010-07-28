@@ -41,45 +41,44 @@ sub spawn {
 
 sub reached_event {
     my ( $self, %opts ) = @_;
-
-    # must have name
-    exists $opts{'name'} && $opts{'name'} ne ''
-        or croak 'Missing event name in reached_event';
-
-    # check the count and order
-    if ( exists $opts{'count'} ) {
-        defined is_integer( $opts{'count'} )
-            or croak 'Bad event count in reached_event';
-    }
-
-    if ( exists $opts{'order'} ) {
-        defined is_integer( $opts{'order'} )
-            or croak 'Bad event order in reached_event';
-    }
-
-    # check the params and deps
-    if ( exists $opts{'params'} ) {
-        ref $opts{'params'} eq 'ARRAY'
-            or croak 'Bad event params in reached_event';
-    }
-
-    if ( exists $opts{'deps'} ) {
-        ref $opts{'deps'} eq 'ARRAY'
-            or croak 'Bad event deps in reached_event';
-    }
+    my ( $name, $count, $order, $params, $deps ) =
+        @opts{ qw/ name count order params deps / };
 
     # currently we still allow to register events without requiring
     # at least a count or params
 
+    # must have name
+    defined $name && $name ne ''
+        or croak 'Missing event name in reached_event';
+
     # add the event to the list of events
     push @{ $self->{'events_order'} }, $opts{'name'};
 
-    # count is only tested in the last run
-#    defined $opts{'count'}
+    # check the count and order
+    if ( defined $count ) {
+        defined is_integer($count) or croak 'Bad event count in reached_event';
 
-    defined $opts{'order'}  and $self->check_order( $opts{'order'} );
-    defined $opts{'params'} and $self->check_params( $opts{'params'}, @_ );
-    defined $opts{'deps'}   and $self->check_deps( $opts{'deps'} );
+        # XXX count is only tested in the last run
+    }
+
+    if ( defined $order ) {
+        defined is_integer($order) or croak 'Bad event order in reached_event';
+
+        $self->check_order( $opts{'name'}, $opts{'order'} );
+    }
+
+    # check the params and deps
+    if ( defined $params ) {
+        ref $params eq 'ARRAY' or croak 'Bad event params in reached_event';
+
+        $self->check_params( $opts{'name'}, $opts{'params'} );
+    }
+
+    if ( defined $deps ) {
+        ref $deps eq 'ARRAY' or croak 'Bad event deps in reached_event';
+
+        $self->check_deps( $opts{'name'}, $opts{'deps'} );
+    }
 
     return 1;
 }
@@ -117,16 +116,13 @@ sub check_order_all_events {
 }
 
 sub check_order {
-    my ( $self, $event ) = @_;
-    my $tb      = $CLASS->builder;
-    my %ev_data = %{ $self->{'events'}{$event} };
+    my ( $self, $event, $event_order ) = @_;
+    my $tb = $CLASS->builder;
 
-    my $order = $ev_data{'order'};
-    if ( defined $order ) {
-        $order == -1 and $order = $self->{'order'};
+    my $event_from_order = $self->{'events_order'}[$event_order];
 
-        $tb->cmp_ok( $self->{'order'}++, '==', $order, "($order) $event" );
-    }
+    # XXX what if the order is -1?
+    $tb->is_eq( $event, $event_from_order, "($event_order) $event" );
 
     return 1;
 }
@@ -146,13 +142,15 @@ sub _child {
             order => 0,
         );
     } elsif ( $change eq 'lose' ) {
+        # get the last events_order
+        my $order = $self->{'events_order'}             ?
+                    scalar @{ $self->{'events_order'} } :
+                    0;
+
         $self->reached_event(
             name  => '_stop',
-            order => -1,
+            order => $order,
         );
-
-        # check order
-        $self->check_order_all_events();
     }
 }
 
