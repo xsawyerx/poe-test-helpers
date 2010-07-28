@@ -85,11 +85,19 @@ sub reached_event {
     return 1;
 }
 
-sub check_event {
-    my ( $self, $event ) = @_;
+sub check_count {
 
-    # check count
-    $self->check_count($event);
+}
+
+sub check_order {
+
+}
+
+sub check_params {
+
+}
+
+sub check_deps {
 
 }
 
