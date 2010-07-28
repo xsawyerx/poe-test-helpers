@@ -44,60 +44,53 @@ sub reached_event {
 
     # must have name
     exists $opts{'name'} && $opts{'name'} ne ''
-        or croak 'Missing event name in register_event';
+        or croak 'Missing event name in reached_event';
 
     # check the count and order
     if ( exists $opts{'count'} ) {
         defined is_integer( $opts{'count'} )
-            or croak 'Bad event count in register_event';
+            or croak 'Bad event count in reached_event';
     }
 
     if ( exists $opts{'order'} ) {
         defined is_integer( $opts{'order'} )
-            or croak 'Bad event order in register_event';
+            or croak 'Bad event order in reached_event';
     }
 
     # check the params and deps
     if ( exists $opts{'params'} ) {
         ref $opts{'params'} eq 'ARRAY'
-            or croak 'Bad event params in register_event';
+            or croak 'Bad event params in reached_event';
     }
 
     if ( exists $opts{'deps'} ) {
         ref $opts{'deps'} eq 'ARRAY'
-            or croak 'Bad event deps in register_event';
+            or croak 'Bad event deps in reached_event';
     }
 
     # currently we still allow to register events without requiring
     # at least a count or params
 
-    my %data = ();
-    defined $opts{'count'}  and $data{'count'}  = $opts{'count'};
-    defined $opts{'order'}  and $data{'order'}  = $opts{'order'};
-    defined $opts{'params'} and $data{'params'} = $opts{'params'};
-    defined $opts{'deps'}   and $data{'deps'}   = $opts{'deps'};
+    # add the event to the list of events
+    push @{ $self->{'events_order'} }, $opts{'name'};
 
-    $self->{'events'}{ $opts{'name'} } = \%data;
+    # count is only tested in the last run
+#    defined $opts{'count'}
 
-    $self->check_event( $opts{'name'} );
-    #push @{ $self->{'events_order'} }, $opts{'name'};
+    defined $opts{'order'}  and $self->check_order( $opts{'order'} );
+    defined $opts{'params'} and $self->check_params( $opts{'params'}, @_ );
+    defined $opts{'deps'}   and $self->check_deps( $opts{'deps'} );
 
     return 1;
 }
 
-sub check_count {
-
-}
-
-sub check_order {
-
-}
-
 sub check_params {
+    my $self = shift;
 
 }
 
 sub check_deps {
+    my $self = shift;
 
 }
 
@@ -148,12 +141,12 @@ sub _child {
     my $internals = $session->[KERNEL];
 
     if ( $change eq 'create' ) {
-        $self->register_event(
+        $self->reached_event(
             name  => '_start',
             order => 0,
         );
     } elsif ( $change eq 'lose' ) {
-        $self->register_event(
+        $self->reached_event(
             name  => '_stop',
             order => -1,
         );
@@ -204,7 +197,7 @@ sub _start {
             # sequence order and sequence order count
             #$self->_seq_order( $sub_to_override, @_ );
 
-            $self->register_event(
+            $self->reached_event(
                 name   => $sub_to_override,
                 order  => $count++,
                 params => [ ARG0 .. $#_ ],
