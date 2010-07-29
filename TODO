@@ -1,1 +1,2 @@
 * Remove ::Session from everywhere
+* Add tests for new->( tests => {} )
