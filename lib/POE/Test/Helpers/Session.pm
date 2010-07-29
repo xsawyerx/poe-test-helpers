@@ -164,23 +164,11 @@ sub _child {
 
 sub _start {
     my ( $self, $kernel ) = @_[ OBJECT, KERNEL ];
-    my ( $test_order, $test_sequence, $test_sequence_count ) =
-        @{$self}{qw/ test_order test_sequence /};
 
     # collect the keys of everyone
     # if exists key in test, add a test for it for them
     $self->{'session_id'} = $_[SESSION]->ID();
 
-    # start with test_order
-    my @subs_to_override  = ref $test_order eq 'ARRAY' ? @{$test_order} : ();
-
-    # continue with test_sequence
-    push @subs_to_override, ref $test_sequence eq 'HASH' ?
-                            keys %{$test_sequence}       :
-                            ();
-
-
-    # XXX: NEW
     @subs_to_override = keys %{ $self->{'tests'} };
 
     my $callback        = $self->{'run'};
@@ -197,12 +185,6 @@ sub _start {
         # override the subroutine
         my $old_sub = $internal_data->{$sub_to_override};
         my $new_sub = sub {
-            # count the order
-            #$self->order( $count, $sub_to_override ) and $count++;
-
-            # sequence order and sequence order count
-            #$self->_seq_order( $sub_to_override, @_ );
-
             $self->reached_event(
                 name   => $sub_to_override,
                 order  => $count++,
@@ -214,44 +196,6 @@ sub _start {
 
         $internal_data->{$sub_to_override} = $new_sub;
     }
-}
-
-sub _stop {
-
-}
-
-sub _should_add {
-    my ( $self, $event, $test ) = @_;
-
-    if ( exists $self->{$test} ) {
-        my @test_events = ();
-        if ( ref $self->{$test} eq 'HASH' ) {
-            @test_events = keys %{ $self->{$test} };
-        } elsif ( ref $self->{$test} eq 'ARRAY' ) {
-            @test_events = @{ $self->{$test} };
-        }
-
-        if ( first { $_ eq $event } @test_events ) {
-            return 1;
-        }
-    }
-
-    return;
-}
-
-# start this method with underscore as well
-sub order {
-    my ( $self, $order, $msg ) = @_;
-    my $new_order   = $order + 1;
-    my $order_count = $self->{'order_count'} || 0;
-
-    $self->_should_add( $msg, 'test_order' ) or return;
-    $order == -1 and $order = $order_count;
-
-    is( $order, $order_count, "($order) $msg" );
-    $self->{'order_count'} = $new_order;
-
-    return 1;
 }
 
 sub _seq_order {
@@ -335,21 +279,6 @@ sub _seq_check_deps {
     ok( ! scalar @bad, "Correct sequence for $event" . $extra );
 
     return;
-}
-
-sub _seq_end {
-    my $self = shift;
-    # now we can check th sub counting
-    foreach my $event ( keys %{ $self->{'test_sequence'} } ) {
-        $self->{'track_seq'}->{$event}{'max'} || next;
-
-        is(
-            $self->{'track_seq'}->{$event}{'cur'},
-            $self->{'track_seq'}->{$event}{'max'},
-            "($event) Correct number of runs",
-        );
-
-    }
 }
 
 1;
