@@ -108,13 +108,37 @@ sub check_order {
 }
 
 sub check_deps {
-    my $self = shift;
+    my ( $self, $event, $deps ) = @_;
+    my $tb = $CLASS->builder;
 
+    # get the event's tested dependencies and all events run so far
+    my @deps_from_event = @{ $self->{'tests'}{$event}{'deps'} };
+    my @all_events      = map { $self->{'events_order'}[$_] }
+        $#{ $self->{'events_order'} };
+
+    # check for problematic dependencies
+    my @problems = ();
+    foreach my $dep_event (@deps_from_event) {
+        if ( ! grep /^$dep_event$/, @all_events ) {
+            push @problems, $dep_event;
+        }
+    }
+
+    # serialize possible errors
+    my $missing = join ', ', @problems;
+    my $extra   = @problems ? "[$missing missing]" : q{};
+
+    $tb->ok( ( @problems > 0 ), "Correct sub deps for ${event}${extra}" );
 }
 
 sub check_params {
-    my $self = shift;
+    my ( $self, $event, $params ) = @_;
 
+    if ( $self->{'params_type'} eq 'ordered' ) {
+        # remove the fetched
+    } else {
+        # don't remove, just match
+    }
 }
 
 sub _child {
