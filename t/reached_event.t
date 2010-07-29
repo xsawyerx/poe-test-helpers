@@ -9,7 +9,13 @@ use Test::Exception;
 # later change to POE::Test::Helpers
 use POE::Test::Helpers::Session;
 
-my $helper = POE::Test::Helpers::Session->new;
+my $helper = POE::Test::Helpers::Session->new(
+    tests => {
+        '_start' => { count  => 0, params => [ 'hello', 'world' ] },
+        'next'   => { params => [] },
+        '_stop'  => { count  => 1  },
+    },
+);
 
 isa_ok( $helper, 'POE::Test::Helpers::Session' );
 
@@ -45,6 +51,25 @@ throws_ok { $helper->reached_event( name => 'a', deps => {} ) }
 throws_ok { $helper->reached_event( name => 'a', deps => '' ) }
     qr/^Bad event deps in reached_event/, 'Empty deps';
 
+{
+    no warnings qw/redefine once/;
+    *POE::Test::Helpers::Session::check_order = sub {
+        ok( 1, 'Reached check_order' );
+    };
+
+    *POE::Test::Helpers::Session::check_count = sub {
+        ok( 1, 'Reached check_count' );
+    };
+
+    *POE::Test::Helpers::Session::check_params = sub {
+        ok( 1, 'Reached check_params' );
+    };
+
+    *POE::Test::Helpers::Session::check_deps = sub {
+        ok( 1, 'Reached check_deps' );
+    };
+}
+
 # typical syntax
 $helper->reached_event(
     name   => '_start',
@@ -62,26 +87,5 @@ $helper->reached_event(
 $helper->reached_event(
     name  => '_stop',
     count => 1,
-);
-
-my %expected = (
-    _start => {
-        count  => 0,
-        params => [ 'hello', 'world' ],
-    },
-    next  => { params => [] },
-    _stop => { count => 1 },
-);
-
-is_deeply(
-    $helper->{'events'},
-    \%expected,
-    'reached_event created correct hash',
-);
-
-is_deeply(
-    $helper->{'events_order'},
-    [ '_start', 'next', '_stop' ],
-    'Correct event order',
 );
 
