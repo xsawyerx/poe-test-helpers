@@ -32,7 +32,7 @@ sub spawn {
 
     $self->{'session_id'} = POE::Session->create(
         object_states => [
-            $self => [ '_start', '_child', '_stop' ],
+            $self => [ '_start', '_child' ],
         ],
     )->ID;
 
@@ -169,7 +169,7 @@ sub _start {
     # if exists key in test, add a test for it for them
     $self->{'session_id'} = $_[SESSION]->ID();
 
-    @subs_to_override = keys %{ $self->{'tests'} };
+    my @subs_to_override = keys %{ $self->{'tests'} };
 
     my $callback        = $self->{'run'};
     my $session_to_test = $callback->();
