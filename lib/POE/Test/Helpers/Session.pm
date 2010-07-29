@@ -41,17 +41,18 @@ sub spawn {
 
 sub reached_event {
     my ( $self, %opts ) = @_;
-    my ( $name, $count, $order, $params, $deps ) =
-        @opts{ qw/ name count order params deps / };
-
-    # currently we still allow to register events without requiring
-    # at least a count or params
-
+    my $name = $opts{'name'};
     # must have name
     defined $name && $name ne ''
         or croak 'Missing event name in reached_event';
 
     my $ev_data = $self->{'tests'}{$name};
+
+    my ( $count, $order, $params, $deps ) =
+        @{$ev_data}{ qw/ name count order params deps / };
+
+    # currently we still allow to register events without requiring
+    # at least a count or params
 
     # add the event to the list of events
     push @{ $self->{'events_order'} }, $name;
