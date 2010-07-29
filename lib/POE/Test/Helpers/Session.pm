@@ -44,14 +44,14 @@ sub reached_event {
     my ( $name, $count, $order, $params, $deps ) =
         @opts{ qw/ name count order params deps / };
 
-    my $ev_data = $self->{'tests'}{$name};
-
     # currently we still allow to register events without requiring
     # at least a count or params
 
     # must have name
     defined $name && $name ne ''
         or croak 'Missing event name in reached_event';
+
+    my $ev_data = $self->{'tests'}{$name};
 
     # add the event to the list of events
     push @{ $self->{'events_order'} }, $name;
