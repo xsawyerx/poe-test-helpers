@@ -69,18 +69,18 @@ sub reached_event {
         defined $ev_data->{'order'} && $self->check_order( $name, $order );
     }
 
-    # check the params
-    if ( defined $params ) {
-        ref $params eq 'ARRAY' or croak 'Bad event params in reached_event';
-
-        defined $ev_data->{'params'} && $self->check_params( $name, $params );
-    }
-
     # check deps
     if ( defined $deps ) {
         ref $deps eq 'ARRAY' or croak 'Bad event deps in reached_event';
 
         defined $ev_data->{'deps'} && $self->check_deps( $name, $deps );
+    }
+
+    # check the params
+    if ( defined $params ) {
+        ref $params eq 'ARRAY' or croak 'Bad event params in reached_event';
+
+        defined $ev_data->{'params'} && $self->check_params( $name, $params );
     }
 
     return 1;
