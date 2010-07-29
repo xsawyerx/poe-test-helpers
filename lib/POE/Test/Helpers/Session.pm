@@ -56,25 +56,27 @@ sub reached_event {
     # add the event to the list of events
     push @{ $self->{'events_order'} }, $name;
 
-    # check the count and order
+    # check the count
     if ( defined $count ) {
-        # XXX count is only tested in the last run
+        # count is only tested in the last run so we just check the param
         defined is_integer($count) or croak 'Bad event count in reached_event';
     }
 
+    # check the order
     if ( defined $order ) {
         defined is_integer($order) or croak 'Bad event order in reached_event';
 
         defined $ev_data->{'order'} && $self->check_order( $name, $order );
     }
 
-    # check the params and deps
+    # check the params
     if ( defined $params ) {
         ref $params eq 'ARRAY' or croak 'Bad event params in reached_event';
 
         defined $ev_data->{'params'} && $self->check_params( $name, $params );
     }
 
+    # check deps
     if ( defined $deps ) {
         ref $deps eq 'ARRAY' or croak 'Bad event deps in reached_event';
 
@@ -82,16 +84,6 @@ sub reached_event {
     }
 
     return 1;
-}
-
-sub check_params {
-    my $self = shift;
-
-}
-
-sub check_deps {
-    my $self = shift;
-
 }
 
 sub check_count {
@@ -104,26 +96,25 @@ sub check_count {
     return 1;
 }
 
-sub check_order_all_events {
-    my $self = shift;
-
-    foreach my $test ( keys %{ $self->{'tests'} } ) {
-        $self->check_order($test);
-    }
-
-    return 1;
-}
-
 sub check_order {
     my ( $self, $event, $event_order ) = @_;
     my $tb = $CLASS->builder;
 
     my $event_from_order = $self->{'events_order'}[$event_order];
 
-    # XXX what if the order is -1?
     $tb->is_eq( $event, $event_from_order, "($event_order) $event" );
 
     return 1;
+}
+
+sub check_deps {
+    my $self = shift;
+
+}
+
+sub check_params {
+    my $self = shift;
+
 }
 
 sub _child {
