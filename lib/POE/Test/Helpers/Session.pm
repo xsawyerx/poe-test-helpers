@@ -16,8 +16,48 @@ my $CLASS = __PACKAGE__;
 sub new {
     my ( $class, %opts ) = @_;
 
-    $opts{ lc $_ } = delete $opts{$_} for keys %opts;
-    my $self       = bless { %opts }, $class;
+    # must have tests
+    my $tests = $opts{'tests'};
+    defined $tests && ref $tests eq 'HASHREF'
+        or croak 'Missing tests data in new';
+
+    foreach my $test ( @{$tests} ) {
+        # must have name
+        my $name = $test->{'name'};
+        defined $name && $name ne ''
+            or croak 'Missing test name in new';
+
+        my $test_data = $test->{$name};
+
+        my ( $count, $order, $params, $deps ) =
+            @{$test_data}{ qw/ name count order params deps / };
+
+        # currently we still allow to register tests without requiring
+        # at least a count or params
+
+        # check the count
+        if ( defined $count ) {
+            # count is only tested in the last run so we just check the param
+            defined is_integer($count) or croak 'Bad event count in new';
+        }
+
+        # check the order
+        if ( defined $order ) {
+            defined is_integer($order) or croak 'Bad event order in new';
+        }
+
+        # check deps
+        if ( defined $deps ) {
+            ref $deps eq 'ARRAY' or croak 'Bad event deps in new';
+        }
+
+        # check the params
+        if ( defined $params ) {
+            ref $params eq 'ARRAY' or croak 'Bad event params in new';
+        }
+    }
+
+    my $self = bless { %{$tests} }, $class;
 
     return $self;
 }
