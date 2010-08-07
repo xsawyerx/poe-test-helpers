@@ -57,8 +57,9 @@ sub new {
     }
 
     my $self = bless {
-        tests => $tests,
-        run   => $opts{'run'}
+        tests       => $tests,
+        run         => $opts{'run'},
+        params_type => $opts{'params_type'} || 'ordered',
     }, $class;
 
     return $self;
@@ -68,9 +69,6 @@ sub spawn {
     my ( $class, %opts ) = @_;
 
     my $self = $class->new(%opts);
-
-    # use some key that can have a simple boolean value
-    $self->{'event_params_type'} ||= 'ordered';
 
     $self->{'session_id'} = POE::Session->create(
         object_states => [
