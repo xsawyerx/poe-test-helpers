@@ -101,6 +101,16 @@ sub reached_event {
     defined is_integer($event_order)
         or croak 'Event order must be integer in reached_event';
 
+    if ( defined $event_params ) {
+        ref $event_params eq 'ARRAY'
+            or croak 'Event params must be arrayref in reached_event';
+    }
+
+    if ( defined $event_deps ) {
+        ref $event_deps eq 'ARRAY'
+            or croak 'Event deps must be arrayref in reached_event';
+    }
+
     my $test_data = $self->{'tests'}{$name};
 
     my ( $test_count, $test_order, $test_params, $test_deps ) =

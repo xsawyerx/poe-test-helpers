@@ -42,18 +42,18 @@ throws_ok { $helper->reached_event( name => 'a', count => 0, order => '' ) }
 # got non-arrayref params
 throws_ok { $helper->reached_event(
     name => 'a', count => 0, order => 0, params => {} )
-} qr/^Bad event params in reached_event/, 'Odd params';
+} qr/^Event params must be arrayref in reached_event/, 'Odd params';
 throws_ok { $helper->reached_event(
     name => 'a', count => 0, order => 0, params => '' )
-} qr/^Bad event params in reached_event/, 'Empty params';
+} qr/^Event params must be arrayref in reached_event/, 'Empty params';
 
 # got non-arrayref deps
 throws_ok { $helper->reached_event(
     name => 'a', count => 0, order => 0, deps => {} )
-} qr/^Bad event deps in reached_event/, 'Odd deps';
+} qr/^Event deps must be arrayref in reached_event/, 'Odd deps';
 throws_ok { $helper->reached_event(
     name => 'a', count => 0, order => 0, deps => '' )
-} qr/^Bad event deps in reached_event/, 'Empty deps';
+} qr/^Event deps must be arrayref in reached_event/, 'Empty deps';
 
 __END__
 # CHECK THE TESTS BEING DONE
