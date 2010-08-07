@@ -10,6 +10,7 @@ use namespace::autoclean;
 
 use List::AllUtils     qw( first none );
 use Test::More;
+use Test::Deep::NoTest qw( bag eq_deeply );
 
 my $CLASS = __PACKAGE__;
 
@@ -182,12 +183,35 @@ sub check_deps {
 }
 
 sub check_params {
-    my ( $self, $event, $params ) = @_;
+    my ( $self, $event, $current_params ) = @_;
+    my $tb = $CLASS->builder;
+
+    my $test_params = $self->{'tests'}{$event}{'params'};
 
     if ( $self->{'params_type'} eq 'ordered' ) {
         # remove the fetched
+        my $expected_params = shift @{$test_params} || [];
+
+        $tb->ok(
+            is_deeply(
+                $current_params,
+                $expected_params,
+            ),
+            "($event) Correct params",
+        );
     } else {
         # don't remove, just match
+        my $okay = 0;
+
+        foreach my $expected_params ( @{$test_params} ) {
+            if ( eq_deeply(
+                    $current_params,
+                    bag(@{$expected_params}) ) ) {
+                $okay++;
+            }
+        }
+
+        $tb->ok( $okay, "($event) Correct [unordered] params" );
     }
 }
 
@@ -253,7 +277,7 @@ sub _start {
             $self->reached_event(
                 name   => $sub_to_override,
                 order  => $count++,
-                params => [ ARG0 .. $#_ ],
+                params => [ @_[ ARG0 .. $#_ ] ],
             );
 
             goto &$old_sub;
