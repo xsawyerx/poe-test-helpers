@@ -3,13 +3,14 @@
 use strict;
 use warnings;
 
-use Test::More tests => 15;
+use Test::More tests => 16;
 use Test::Exception;
 
 # XXX: later change to POE::Test::Helpers
 use POE::Test::Helpers::Session;
-my $class = 'POE::Test::Helpers::Session'; 
-my $new   = sub { return POE::Test::Helpers::Session->new(@_) };
+my $class   = 'POE::Test::Helpers::Session';
+my $new     = sub { return POE::Test::Helpers::Session->new(@_) };
+my $new_run = sub { return $new->( run => sub {}, @_ )          };
 
 throws_ok { $new->() }
     qr/^Missing tests data in new/, 'tests and run required';
@@ -28,62 +29,63 @@ throws_ok { $new->( tests => [] ) }
 
 # checking errors
 
-# missing name
-throws_ok { $new->( count => 0, params => [] ) }
-    qr/^Missing event name in new/, 'Name is mandatory';
-throws_ok { $new->( name => '', count => 0, params => [] ) }
-    qr/^Missing event name in new/, 'Name is mandatory';
-
 # got non-digit count
-throws_ok { $new->( name => 'a', count => 'z' ) }
+throws_ok { $new_run->( tests => { a => { count => 'z' } } ) }
     qr/^Bad event count in new/, 'Non-digit count';
-throws_ok { $new->( name => 'a', count => '' ) }
+throws_ok { $new_run->( tests => { a => { count => ''  } } ) }
     qr/^Bad event count in new/, 'Empty count';
 
 # got non-digit order
-throws_ok { $new->( name => 'a', order => 'z' ) }
+throws_ok { $new_run->( tests => { a => { order => 'z' } } ) }
     qr/^Bad event order in new/, 'Non-digit order';
-throws_ok { $new->( name => 'a', order => '' ) }
+throws_ok { $new_run->( tests => { a => { order => ''  } } ) }
     qr/^Bad event order in new/, 'Empty order';
 
 # got non-arrayref params
-throws_ok { $new->( name => 'a', params => {} ) }
+throws_ok { $new_run->( tests => { a => { params => {} } } ) }
     qr/^Bad event params in new/, 'Odd params';
-throws_ok { $new->( name => 'a', params => '' ) }
+throws_ok { $new_run->( tests => { a => { params => '' } } ) }
     qr/^Bad event params in new/, 'Empty params';
 
 # got non-arrayref deps
-throws_ok { $new->( name => 'a', deps => {} ) }
+throws_ok { $new_run->( tests => { a => { deps => {} } } ) }
     qr/^Bad event deps in new/, 'Odd deps';
-throws_ok { $new->( name => 'a', deps => '' ) }
+throws_ok { $new_run->( tests => { a => { deps => '' } } ) }
     qr/^Bad event deps in new/, 'Empty deps';
 
 # typical syntax
 isa_ok(
-    $new->(
+    $new_run->(
         tests => {
-            name   => '_start',
-            count  => 0,
-            params => [ 'hello', 'world' ],
-        }
+            '_start' => {
+                count  => 0,
+                params => [ 'hello', 'world' ],
+            },
+        },
     ),
     $class,
 );
 
 # explicitly no parameters, don't check count
 isa_ok(
-    $new->(
-        name   => 'next',
-        params => [],
+    $new_run->(
+        tests => {
+            'next' => {
+                params => [],
+            },
+        },
     ),
     $class,
 );
 
 # don't check parameters
 isa_ok(
-    $new->(
-        name  => '_stop',
-        count => 1,
+    $new_run->(
+        tests => {
+            '_stop' => {
+                count => 1,
+            },
+        },
     ),
     $class,
 );

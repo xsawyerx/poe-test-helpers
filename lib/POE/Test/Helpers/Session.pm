@@ -25,16 +25,11 @@ sub new {
     exists $opts{'run'}        or croak 'Missing run method in new';
     ref $opts{'run'} eq 'CODE' or croak 'Run method should be a coderef in new';
 
-    foreach my $test ( @{$tests} ) {
-        # must have name
-        my $name = $test->{'name'};
-        defined $name && $name ne ''
-            or croak 'Missing test name in new';
-
-        my $test_data = $test->{$name};
+    foreach my $name ( keys %{$tests} ) {
+        my $test_data = $tests->{$name};
 
         my ( $count, $order, $params, $deps ) =
-            @{$test_data}{ qw/ name count order params deps / };
+            @{$test_data}{ qw/ count order params deps / };
 
         # currently we still allow to register tests without requiring
         # at least a count or params
