@@ -10,7 +10,6 @@ use List::AllUtils     qw( first none );
 use Test::Deep::NoTest qw( bag eq_deeply );
 use namespace::autoclean;
 
-
 my $CLASS = __PACKAGE__;
 
 sub new {
