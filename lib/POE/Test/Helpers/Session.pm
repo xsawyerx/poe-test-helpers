@@ -193,7 +193,7 @@ sub check_params {
         my $expected_params = shift @{$test_params} || [];
 
         $tb->ok(
-            is_deeply(
+            eq_deeply(
                 $current_params,
                 $expected_params,
             ),
