@@ -56,7 +56,7 @@ sub new {
         }
     }
 
-    my $self = bless { %{$tests}, run => $opts{'run'} }, $class;
+    my $self = bless { tests => $tests, run => $opts{'run'} }, $class;
 
     return $self;
 }
@@ -217,10 +217,10 @@ sub _child {
 
         # checking the count
         foreach my $test ( keys %{ $self->{'tests'} } ) {
-            my $ev_data = $self->{'tests'}{$test};
+            my $test_data = $self->{'tests'}{$test};
 
-            if ( exists $ev_data->{'count'} ) {
-                $self->check_count( $test, $ev_data->{'count'} );
+            if ( exists $test_data->{'count'} ) {
+                $self->check_count( $test, $test_data->{'count'} );
             }
         }
     }
