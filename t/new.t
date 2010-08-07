@@ -11,20 +11,20 @@ use POE::Test::Helpers::Session;
 my $class = 'POE::Test::Helpers::Session'; 
 my $new   = sub { return POE::Test::Helpers::Session->new(@_) };
 
-throws_ok { $new->() } qr/^Missing tests data in new/,
-    'tests and run required';
+throws_ok { $new->() }
+    qr/^Missing tests data in new/, 'tests and run required';
 
 throws_ok { $new->( tests => {} ) }
-    qr/Missing run method in new/, 'run required';
+    qr/^Missing run method in new/, 'run required';
 
-throws_ok { $new->( run => sub {1} ) } qr/^Missing tests data in new/,
-    'tests required';
+throws_ok { $new->( run => sub {1} ) }
+    qr/^Missing tests data in new/, 'tests required';
 
-throws_ok { $new->( run => {} ) } qr/^Run method should be a coderef in new/,
-    'run should be coderef';
+throws_ok { $new->( run => {}, tests => {} ) }
+    qr/^Run method should be a coderef in new/, 'run should be coderef';
 
-throws_ok { $new->( tests => [] ) } qr/Tests data should be a hashref in new/,
-    'tests should be hashref';
+throws_ok { $new->( tests => [] ) }
+    qr/Tests data should be a hashref in new/, 'tests should be hashref';
 
 # checking errors
 
