@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 13;
+use Test::More tests => 15;
 use Test::Exception;
 
 # XXX: later change to POE::Test::Helpers
@@ -14,7 +14,7 @@ my $new   = sub { return POE::Test::Helpers::Session->new(@_) };
 throws_ok { $new->() } qr/^Missing tests data in new/,
     'tests and run required';
 
-throws_ok { $new->( tests => {} ) }
+throws_ok { $new->( tests => {a => 'b'} ) }
     qr/Missing run method in new/, 'run required';
 
 throws_ok { $new->( run => sub {1} ) } qr/^Missing tests data in new /,

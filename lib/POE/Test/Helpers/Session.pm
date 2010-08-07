@@ -18,8 +18,12 @@ sub new {
 
     # must have tests
     my $tests = $opts{'tests'};
-    defined $tests && ref $tests eq 'HASHREF'
-        or croak 'Missing tests data in new';
+    defined $tests       or croak 'Missing tests data in new';
+    ref $tests eq 'HASH' or croak 'Tests data should be a hashref in new';
+
+    # must have run method
+    exists $opts{'run'}        or croak 'Missing run method in new';
+    ref $opts{'run'} eq 'CODE' or croak 'Run method should be a coderef in new';
 
     foreach my $test ( @{$tests} ) {
         # must have name
