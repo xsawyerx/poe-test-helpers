@@ -81,20 +81,15 @@ sub spawn {
 sub reached_event {
     my ( $self, %opts ) = @_;
     # we don't have to get params,
-    # but we do have to get the name, order and count
+    # but we do have to get the name and order
 
     my $name = $opts{'name'};
     # must have name
     defined $name && $name ne ''
         or croak 'Missing event name in reached_event';
 
-    my ( $event_count, $event_order, $event_params, $event_deps ) =
-        @opts{ qw/ count order params deps / };
-
-    defined $event_count
-        or croak 'Missing event count in reached_event';
-    defined is_integer($event_count)
-        or croak 'Event count must be integer in reached_event';
+    my ( $event_order, $event_params, $event_deps ) =
+        @opts{ qw/ order params deps / };
 
     defined $event_order
         or croak 'Missing event order in reached_event';
