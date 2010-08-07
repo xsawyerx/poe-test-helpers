@@ -56,7 +56,7 @@ sub new {
         }
     }
 
-    my $self = bless { %{$tests} }, $class;
+    my $self = bless { %{$tests}, run => $opts{'run'} }, $class;
 
     return $self;
 }
