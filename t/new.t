@@ -14,7 +14,7 @@ my $new   = sub { return POE::Test::Helpers::Session->new(@_) };
 throws_ok { $new->() } qr/^Missing tests data in new/,
     'tests and run required';
 
-throws_ok { $new->( tests => {a => 'b'} ) }
+throws_ok { $new->( tests => {} ) }
     qr/Missing run method in new/, 'run required';
 
 throws_ok { $new->( run => sub {1} ) } qr/^Missing tests data in new /,
