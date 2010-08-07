@@ -8,21 +8,18 @@
 package Session;
 use Test::More tests => 4;
 use MooseX::POE;
-with 'POE::Test::Helpers';
-sub START {
-    $_[OBJECT]->order( 0, 'START' );
-    $_[KERNEL]->yield('next');
-}
-event 'next' => sub {
-    $_[OBJECT]->order( 1, 'next' );
-    $_[KERNEL]->yield('last');
-};
-event 'last' => sub {
-    $_[OBJECT]->order( 2, 'last' );
-};
-sub STOP {
-    $_[OBJECT]->order( 3, 'STOP' );
-}
+with 'POE::Test::Helpers::MooseRole';
+
+has '+tests' => ( default => sub { {
+    '_start' => { order => 0 },
+    'next'   => { order => 1 },
+    'last'   => { order => 2 },
+    '_stop'  => { order => 3 },
+} } );
+sub START { $_[KERNEL]->yield('next') }
+event 'next' => sub { $_[KERNEL]->yield('last') };
+event 'last' => sub {};
+sub STOP {}
 
 package main;
 use POE::Kernel;
