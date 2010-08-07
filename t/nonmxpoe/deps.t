@@ -9,7 +9,7 @@
 
 package Session;
 
-use Test::More tests => 4;
+use Test::More tests => 3;
 use POE::Test::Helpers::Session;
 
 use POE;
@@ -26,10 +26,9 @@ POE::Test::Helpers::Session->spawn(
     },
 
     tests => {
-        '_start' => { deps => []                           },
-        'next'   => { deps => [ '_start'                 ] },
-        'last'   => { deps => [ '_start', 'next'         ] },
-        '_stop'  => { deps => [ '_start', 'next', 'last' ] },
+        'next'  => { deps => [ '_start'                 ] },
+        'last'  => { deps => [ '_start', 'next'         ] },
+        '_stop' => { deps => [ '_start', 'next', 'last' ] },
     },
 );
 
