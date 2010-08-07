@@ -80,15 +80,31 @@ sub spawn {
 
 sub reached_event {
     my ( $self, %opts ) = @_;
+    # we don't have to get params,
+    # but we do have to get the name, order and count
+
     my $name = $opts{'name'};
     # must have name
     defined $name && $name ne ''
         or croak 'Missing event name in reached_event';
 
-    my $ev_data = $self->{'tests'}{$name};
+    my ( $event_count, $event_order, $event_params, $event_deps ) =
+        @opts{ qw/ count order params deps / };
 
-    my ( $count, $order, $params, $deps ) =
-        @{$ev_data}{ qw/ name count order params deps / };
+    defined $event_count
+        or croak 'Missing event count in reached_event';
+    defined is_integer($event_count)
+        or croak 'Event count must be integer in reached_event';
+
+    defined $event_order
+        or croak 'Missing event order in reached_event';
+    defined is_integer($event_order)
+        or croak 'Event order must be integer in reached_event';
+
+    my $test_data = $self->{'tests'}{$name};
+
+    my ( $test_count, $test_order, $test_params, $test_deps ) =
+        @{$test_data}{ qw/ count order params deps / };
 
     # currently we still allow to register events without requiring
     # at least a count or params
@@ -96,31 +112,19 @@ sub reached_event {
     # add the event to the list of events
     push @{ $self->{'events_order'} }, $name;
 
-    # check the count
-    if ( defined $count ) {
-        # count is only tested in the last run so we just check the param
-        defined is_integer($count) or croak 'Bad event count in reached_event';
-    }
-
     # check the order
-    if ( defined $order ) {
-        defined is_integer($order) or croak 'Bad event order in reached_event';
-
-        defined $ev_data->{'order'} && $self->check_order( $name, $order );
+    if ( defined $test_order ) {
+        $self->check_order( $name, $event_order );
     }
 
     # check deps
-    if ( defined $deps ) {
-        ref $deps eq 'ARRAY' or croak 'Bad event deps in reached_event';
-
-        defined $ev_data->{'deps'} && $self->check_deps( $name, $deps );
+    if ( defined $test_deps ) {
+        $self->check_deps( $name, $event_deps );
     }
 
     # check the params
-    if ( defined $params ) {
-        ref $params eq 'ARRAY' or croak 'Bad event params in reached_event';
-
-        defined $ev_data->{'params'} && $self->check_params( $name, $params );
+    if ( defined $test_params ) {
+        $self->check_params( $name, $event_params );
     }
 
     return 1;

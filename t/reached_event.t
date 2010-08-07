@@ -10,11 +10,7 @@ use Test::Exception;
 use POE::Test::Helpers::Session;
 
 my $helper = POE::Test::Helpers::Session->new(
-    tests => {
-        '_start' => { count  => 0, params => [ 'hello', 'world' ] },
-        'next'   => { params => [] },
-        '_stop'  => { count  => 1  },
-    },
+    run => sub {}, tests => {},
 );
 
 isa_ok( $helper, 'POE::Test::Helpers::Session' );
@@ -22,35 +18,45 @@ isa_ok( $helper, 'POE::Test::Helpers::Session' );
 # checking errors
 
 # missing name
-throws_ok { $helper->reached_event( count => 0, params => [] ) }
+throws_ok { $helper->reached_event() }
     qr/^Missing event name in reached_event/, 'Name is mandatory';
-throws_ok { $helper->reached_event( name => '', count => 0, params => [] ) }
+throws_ok { $helper->reached_event( name => '' ) }
     qr/^Missing event name in reached_event/, 'Name is mandatory';
 
 # got non-digit count
+throws_ok { $helper->reached_event( name => 'a' ) }
+    qr/^Missing event count in reached_event/, 'No count';
 throws_ok { $helper->reached_event( name => 'a', count => 'z' ) }
-    qr/^Bad event count in reached_event/, 'Non-digit count';
+    qr/^Event count must be integer in reached_event/, 'Non-digit count';
 throws_ok { $helper->reached_event( name => 'a', count => '' ) }
-    qr/^Bad event count in reached_event/, 'Empty count';
+    qr/^Event count must be integer in reached_event/, 'Empty count';
 
 # got non-digit order
+throws_ok { $helper->reached_event( name => 'a', count => 0, ) }
+    qr/^Missing event order in reached_event/, 'No order';
 throws_ok { $helper->reached_event( name => 'a', order => 'z' ) }
-    qr/^Bad event order in reached_event/, 'Non-digit order';
+    qr/^Event order must be integer in reached_event/, 'Non-digit order';
 throws_ok { $helper->reached_event( name => 'a', order => '' ) }
-    qr/^Bad event order in reached_event/, 'Empty order';
+    qr/^Event order must be integer in reached_event/, 'Empty order';
 
 # got non-arrayref params
-throws_ok { $helper->reached_event( name => 'a', params => {} ) }
-    qr/^Bad event params in reached_event/, 'Odd params';
-throws_ok { $helper->reached_event( name => 'a', params => '' ) }
-    qr/^Bad event params in reached_event/, 'Empty params';
+throws_ok { $helper->reached_event(
+    name => 'a', count => 0, order => 0, params => {} )
+} qr/^Bad event params in reached_event/, 'Odd params';
+throws_ok { $helper->reached_event(
+    name => 'a', count => 0, order => 0, params => '' )
+} qr/^Bad event params in reached_event/, 'Empty params';
 
 # got non-arrayref deps
-throws_ok { $helper->reached_event( name => 'a', deps => {} ) }
-    qr/^Bad event deps in reached_event/, 'Odd deps';
-throws_ok { $helper->reached_event( name => 'a', deps => '' ) }
-    qr/^Bad event deps in reached_event/, 'Empty deps';
+throws_ok { $helper->reached_event(
+    name => 'a', count => 0, order => 0, deps => {} )
+} qr/^Bad event deps in reached_event/, 'Odd deps';
+throws_ok { $helper->reached_event(
+    name => 'a', count => 0, order => 0, deps => '' )
+} qr/^Bad event deps in reached_event/, 'Empty deps';
 
+__END__
+# CHECK THE TESTS BEING DONE
 {
     no warnings qw/redefine once/;
     *POE::Test::Helpers::Session::check_order = sub {
