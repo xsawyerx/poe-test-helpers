@@ -5,12 +5,11 @@ use strictures 1;
 use Carp;
 use parent 'Test::Builder::Module';
 use POE::Session;
-use Data::Validate 'is_integer';
+use Data::Validate    'is_integer';
+use List::AllUtils     qw( first none );
+use Test::Deep::NoTest qw( bag eq_deeply );
 use namespace::autoclean;
 
-use List::AllUtils     qw( first none );
-use Test::More;
-use Test::Deep::NoTest qw( bag eq_deeply );
 
 my $CLASS = __PACKAGE__;
 
@@ -285,89 +284,6 @@ sub _start {
 
         $internal_data->{$sub_to_override} = $new_sub;
     }
-}
-
-sub _seq_order {
-    my ( $self, $event, @args ) = @_;
-
-    # check whether we should run _seq_order or not
-    $self->_should_add( $event, 'test_sequence' ) or return;
-
-    my $value = $self->{'test_sequence'}{$event} || q{};
-
-    # checking sequences
-    if ( ref $value eq 'ARRAY' ) {
-        # event dependencies
-        $self->_seq_check_deps( $value, $event );
-    } elsif ( ref $value eq 'HASH' ) {
-        # mixture of sub counting and event dependencies
-        # checking deps, setting max value
-        if ( keys %{$value} > 1 ) {
-            carp "Skipping $event, too many definitions.\n";
-            return;
-        }
-
-        my ( $max, $array ) = each %{$value};
-
-        $self->_seq_check_deps( $array, $event );
-        $self->{'track_seq'}{$event}{'max'} = $max;
-    } elsif ( ! ref $value ) {
-        # just setting the max value for each sub
-        $self->{'track_seq'}{$event}{'max'} = $value;
-    } else {
-        carp "Problem with value: $value\n";
-    }
-
-    # checking parameter
-    if ( my $event_params = $self->{'test_event_params'}{$event} ) {
-        my $current_params  = @args ? \@args : [];
-
-        # event_params defined, we can check
-        if ( $self->{'event_params_type'} eq 'ordered' ) {
-            my $expected_params = shift @{$event_params} || [];
-
-            cmp_bag(
-                $current_params,
-                $expected_params,
-                "($event) Correct params",
-            );
-        } elsif ( my $type = $self->{'event_params_type'} eq 'unordered' ) {
-            my $okay = 0;
-
-            foreach my $expected_params ( @{$event_params} ) {
-                if ( eq_deeply(
-                        $current_params,
-                        bag(@{$expected_params}) ) ) {
-                    $okay++;
-                }
-            }
-
-            ok( $okay, "($event) Correct [unordered] params" );
-        } else {
-            carp "Unknown event_params_type: $type\n";
-        }
-    }
-
-    $self->{'track_seq'}{$event}{'cur'}++;
-    return;
-}
-
-sub _seq_check_deps {
-    my ( $self, $got_deps, $event ) = @_;
-    my @exp_deps = keys %{ $self->{'track_seq'} };
-    my @bad      = ();
-
-    foreach my $dep ( @{$got_deps} ) {
-        if ( none { $dep eq $_ } @exp_deps ) {
-            push @bad, $dep;
-        }
-    }
-
-    my $data  = join ', ', map { qq{"$_"} } @bad;
-    my $extra = scalar @bad ? " [$data missing]" : q{};
-    ok( ! scalar @bad, "Correct sequence for $event" . $extra );
-
-    return;
 }
 
 1;
