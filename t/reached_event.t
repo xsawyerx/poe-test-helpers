@@ -34,9 +34,9 @@ throws_ok { $helper->reached_event( name => 'a', count => '' ) }
 # got non-digit order
 throws_ok { $helper->reached_event( name => 'a', count => 0, ) }
     qr/^Missing event order in reached_event/, 'No order';
-throws_ok { $helper->reached_event( name => 'a', order => 'z' ) }
+throws_ok { $helper->reached_event( name => 'a', count => 0, order => 'z' ) }
     qr/^Event order must be integer in reached_event/, 'Non-digit order';
-throws_ok { $helper->reached_event( name => 'a', order => '' ) }
+throws_ok { $helper->reached_event( name => 'a', count => 0, order => '' ) }
     qr/^Event order must be integer in reached_event/, 'Empty order';
 
 # got non-arrayref params
