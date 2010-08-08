@@ -240,12 +240,17 @@ sub _child {
         );
 
         # checking the count
-        foreach my $test ( keys %{ $self->{'tests'} } ) {
-            my $test_data = $self->{'tests'}{$test};
+        $self->check_all_counts;
+    }
+}
 
-            if ( exists $test_data->{'count'} ) {
-                $self->check_count( $test, $test_data->{'count'} );
-            }
+sub check_all_counts {
+    my $self = shift;
+    foreach my $test ( keys %{ $self->{'tests'} } ) {
+        my $test_data = $self->{'tests'}{$test};
+
+        if ( exists $test_data->{'count'} ) {
+            $self->check_count( $test, $test_data->{'count'} );
         }
     }
 }
