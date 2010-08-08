@@ -163,8 +163,7 @@ sub check_deps {
 
     # get the event's tested dependencies and all events run so far
     my @deps_from_event = @{ $self->{'tests'}{$event}{'deps'} };
-    my @all_events      = map { $self->{'events_order'}[$_] }
-        $#{ $self->{'events_order'} };
+    my @all_events      = @{ $self->{'events_order'} };
 
     # check for problematic dependencies
     my @problems = ();
