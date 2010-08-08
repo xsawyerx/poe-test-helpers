@@ -12,12 +12,12 @@
 package Session;
 
 use Test::More tests => 14;
-use POE::Test::Helpers::Session;
+use POE::Test::Helpers;
 
 use POE;
 
 my $count = 0;
-POE::Test::Helpers::Session->spawn(
+POE::Test::Helpers->spawn(
     run => sub {
         POE::Session->create(
             inline_states => {

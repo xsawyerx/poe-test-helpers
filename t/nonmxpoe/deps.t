@@ -10,11 +10,11 @@
 package Session;
 
 use Test::More tests => 3;
-use POE::Test::Helpers::Session;
+use POE::Test::Helpers;
 
 use POE;
 
-POE::Test::Helpers::Session->spawn(
+POE::Test::Helpers->spawn(
     run => sub {
         POE::Session->create(
             inline_states => {
