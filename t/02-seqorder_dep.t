@@ -8,15 +8,13 @@
 # instead of what exact global order it had
 
 package Session;
-use Test::More tests => 4;
+use Test::More tests => 3;
 use MooseX::POE;
-with 'POE::Test::Helpers';
-has '+seq_ordering' => (
-    default => sub { {
-        'START' => [],
-        'next'  => [ 'START'                 ],
-        'last'  => [ 'START', 'next'         ],
-        'STOP'  => [ 'START', 'next', 'last' ],
+with 'POE::Test::Helpers::MooseRole';
+has '+tests' => ( default => sub { {
+    'next'   => { deps => [ '_start'                 ] },
+    'last'   => { deps => [ '_start', 'next'         ] },
+    '_stop'  => { deps => [ '_start', 'next', 'last' ] },
 } } );
 
 sub START           { $_[KERNEL]->yield('next') }

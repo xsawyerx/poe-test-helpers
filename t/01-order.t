@@ -9,7 +9,6 @@ package Session;
 use Test::More tests => 4;
 use MooseX::POE;
 with 'POE::Test::Helpers::MooseRole';
-
 has '+tests' => ( default => sub { {
     '_start' => { order => 0 },
     'next'   => { order => 1 },
