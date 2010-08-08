@@ -6,10 +6,9 @@ use warnings;
 use Test::More tests => 16;
 use Test::Exception;
 
-# XXX: later change to POE::Test::Helpers
-use POE::Test::Helpers::Session;
-my $class   = 'POE::Test::Helpers::Session';
-my $new     = sub { return POE::Test::Helpers::Session->new(@_) };
+use POE::Test::Helpers;
+my $class   = 'POE::Test::Helpers';
+my $new     = sub { return POE::Test::Helpers->new(@_) };
 my $new_run = sub { return $new->( run => sub {}, @_ )          };
 
 throws_ok { $new->() }
