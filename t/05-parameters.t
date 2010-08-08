@@ -8,11 +8,10 @@
 package Session;
 use Test::More tests => 4;
 use MooseX::POE;
-with 'POE::Test::Helpers';
-has '+event_params' => (
-    default => sub { {
-        'next' => [ [ 'hello', 'world' ], [ 'goodbye' ] ],
-        'more' => [],
+with 'POE::Test::Helpers::MooseRole';
+has '+tests' => ( default => sub { {
+    'next' => { params => [ [ 'hello', 'world' ], [ 'goodbye' ] ] },
+    'more' => { params => [] },
 } } );
 
 my $flag = 0;
