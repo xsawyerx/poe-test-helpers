@@ -178,7 +178,7 @@ sub check_deps {
     my $missing = join ', ', @problems;
     my $extra   = @problems ? "[$missing missing]" : q{};
 
-    $tb->ok( ( @problems > 0 ), "Correct sub deps for ${event}${extra}" );
+    $tb->ok( ( @problems == 0 ), "Correct sub deps for ${event}${extra}" );
 }
 
 sub check_params {
