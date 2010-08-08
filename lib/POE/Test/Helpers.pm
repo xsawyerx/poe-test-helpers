@@ -292,40 +292,41 @@ __END__
 
 =head1 SYNOPSIS
 
-This module provides a Moose role to allow you to test your POE code.
+This module provides you with a framwork to easily write tests for your POE
+code.
 
-Currently it's best used with L<MooseX::POE> but L<POE::Session> code is also
-doable.
-
-Perhaps a little code snippet.
+The main purpose of this module is to be non-instrusive (or abstrusive) and
+allow you to write your code without getting in your way.
 
     package MySession;
-    use MooseX::POE;
-    with 'POE::Test::Helpers';
 
-    has '+seq_ordering' => ( default => sub { {
-        last => { 1 => ['next'] },
-    } } );
+    use Test::More tests => 1;
+    use POE;
+    use POE::Test::Helpers;
 
-    event 'START' => sub {
-        $_[KERNEL]->yield('next');
+    # defining a callback to create a session
+    my $run = sub {
+        return POE::Session->create(
+            inline_states => {
+                '_start' => sub {
+                    print "Start says hi!\n";
+                    $_[KERNEL]->yield('next');
+                },
+                'next' => sub { print "Next says hi!\n" },
+            }
+        );
     };
 
-    event 'next' => sub {
-        $_[KERNEL]->yield('last');
-    };
-
-    event 'last' => sub {
-        ...
-    };
-
-    package main;
-    use Test::More tests => 2;
-    use POE::Kernel;
-    MySession->new();
-    POE::Kernel->run();
-
-    ...
+    # here we define the tests
+    # and tell POE::Test::Helpers to run your session
+    POE::Test::Helpers->spawn(
+        run   => $run,
+        tests => {
+            # _start is actually 0
+            # next will run right after _start
+            next => { order => 1 },
+        },
+    );
 
 Testing event-based programs is not trivial at all. There's a lot of hidden race
 conditions and unknown behavior afoot. Usually we separate the testing to
@@ -339,15 +340,20 @@ There are also a lot of types of tests that we would want to run, such as:
 
 =item * Ordered Events:
 
-Did every event run in the specific ordered I wanted it to?
+Did every event run in the specific order I wanted it to?
 
 I<(maybe some event was called first instead of third...)>
 
 =item * Sequence Ordered Events:
 
-Declaring dependency events for tested events.
+Did every event run only after other events?
 
-I<(an event is only okay if the preceeding events ran first)>
+Imagine you want to check whether C<run_updates> ran, but you know it can should
+only run after C<get_main_status> ran. In event-based programming, you would
+give up the idea of testing this possible race condition, but with
+Test::POE::Helpers you can test it.
+
+I<< C<run_updates> can only run after C<get_main_status> >
 
 =item * Event Counting:
 
@@ -374,71 +380,7 @@ the following attributes.
 
 =head1 Attributes
 
-=head2 seq_ordering
-
-This is a hash reference which sets the number of times each event can be run
-and/or the event that had to come first before the event could be run. That is,
-if you have an event "world", you can specify that "world" can only be run once,
-or can only be run twice. You can instead specify that "world" can only be run
-after a different event - "hello" - has been run.
-
-Here are some examples:
-
-    has '+seq_ordering' => ( default => sub { {
-        hello => 1,                  # hello can only be run once
-        there => ['hello'],          # there can only be run after hello
-        world => { 2 => ['hello'] }, # world runs twice, only after hello
-    } } );
-
-One thing to remember is that event dependencies are not direct. That is, in the
-above example, "world" can be run right after "there" but as long as "hello" was
-run sometime prior to that, it will be okay. That is, sequence ordering is not
-strict.
-
-=head2 event_params
-
-This is a hash reference which sets the parameters each event is expecting. By
-default, this parameters must be consecutive. That is, if there are two sets of
-parameters, the first one is what's tested when the event is run for the first
-time and the second one will be tested when the event is run the second time. If
-this is troublesome for you, check the next attribute, you'll enjoy that.
-
-    has '+event_params' => ( default => sub { {
-        goodbye => [ [ 'cruel',  'world' ] ],
-        hello   => [ [ 'ironic', 'twist' ] ],
-        special => [ [ 'params', 'for', first', 'run' ], [ 'more', 'params' ] ],
-    } } );
-
-You'll notice one weird thing: two array refs. The reason is actually very
-simple. This test checks each parameter separately, so you specify sets of
-parameters, each set for a different run. Thus, each set is defined in an array
-ref. Because of this, even if you're only giving one set of params, it needs to
-be encapsulated in an array ref. This might change in the future, if anyone will
-care enough.
-
-=head2 event_params_type
-
-This is a simple string which controls how the event_params will go. Meanwhile
-it can only be set to "ordered" and "unordered". This might change in the future
-or could be replaced with "event_params_ordered" boolean or something. Be
-warned.
-
-Basically this means that you don't care about the order of how the parameters
-get there, but only that whenever the event was run, it had one of the sets of
-parameters.
-
 =head1 METHODS
-
-=head2 order
-
-Simple ordered tests can also be done using this framework, but are less
-intuitive. In order to set orders of events, a method has to be run. I'm sure
-this will be changed, so stay tuned.
-
-    event 'example' => sub {
-        my $self = $_[OBJECT];
-        $self->order( 0, 'Example runs first!' );
-    };
 
 =head1 AUTHOR
 
@@ -503,7 +445,7 @@ core principles in this module.
 
 =head1 COPYRIGHT & LICENSE
 
-Copyright 2009 Sawyer, all rights reserved.
+Copyright 2009-2010 Sawyer, all rights reserved.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of either: the GNU General Public License as published
