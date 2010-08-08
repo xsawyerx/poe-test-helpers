@@ -10,14 +10,13 @@
 package Session;
 use Test::More tests => 5;
 use MooseX::POE;
-with 'POE::Test::Helpers';
-has '+seq_ordering' => (
-    default => sub { {
-        'START' => 1,
-        'next'  => 4,
-        'more'  => 4,
-        'last'  => 1,
-        'STOP'  => 1,
+with 'POE::Test::Helpers::MooseRole';
+has '+tests' => ( default => sub { {
+    '_start' => { count => 1 },
+    'next'   => { count => 4 },
+    'more'   => { count => 4 },
+    'last'   => { count => 1 },
+    '_stop'  => { count => 1 },
 } } );
 
 my $count = 0;
