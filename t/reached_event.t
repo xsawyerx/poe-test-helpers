@@ -6,14 +6,13 @@ use warnings;
 use Test::More tests => 10;
 use Test::Exception;
 
-# later change to POE::Test::Helpers
-use POE::Test::Helpers::Session;
+use POE::Test::Helpers;
 
-my $helper = POE::Test::Helpers::Session->new(
+my $helper = POE::Test::Helpers->new(
     run => sub {}, tests => {},
 );
 
-isa_ok( $helper, 'POE::Test::Helpers::Session' );
+isa_ok( $helper, 'POE::Test::Helpers' );
 
 # checking errors
 
