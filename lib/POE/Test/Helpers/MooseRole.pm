@@ -1,4 +1,4 @@
-package POE::Test::Helpers::MooseRole
+package POE::Test::Helpers::MooseRole;
 # ABSTRACT: A Moose role for POE::Test::Helpers for MooseX::POE
 
 use Carp;
@@ -8,15 +8,21 @@ use List::AllUtils     qw( none );
 use Test::More;
 use Moose::Role;
 use POE::Session; # for POE variables
+use POE::Test::Helpers;
 
-# TODO: use native Counter here
-# TODO: use native Hash here
+has 'object' => (
+    is         => 'ro',
+    isa        => 'POE::Test::Helpers',
+    lazy_build => 1,
+    handles    => [ 'reached_event', 'check_all_counts' ],
+);
+
 has 'tests'       => ( is => 'ro', isa => 'HashRef', required => 1         );
 has 'params_type' => ( is => 'ro', isa => 'Str',     default  => 'ordered' );
 
-sub BUILD {
+sub _build_object {
     my $self   = shift;
-    my $object = POE::Test::Helpers::Session->new(
+    my $object = POE::Test::Helpers->new(
         run         => sub {1},
         tests       => $self->tests,
         params_type => $self->params_type,
@@ -26,20 +32,26 @@ sub BUILD {
 before 'STARTALL' => sub {
     my $self  = shift;
     my $class = ref $self;
-    foreach my $event ( keys %{ $self->seq_ordering } ) {
-        Moose::Meta::Class->initialize($class)->add_before_method_modifier(
-            $event => sub {
-                my $self = $_[OBJECT];
-                $self->_seq_order($event);
-            }
-        );
-    }
 
-    foreach my $event ( keys %{ $self->event_params } ) {
+    $self->reached_event(
+        name  => '_start',
+        order => 0,
+    );
+
+    my $count = 1;
+    my @subs_to_override = keys %{ $self->object->{'tests'} };
+
+    foreach my $event (@subs_to_override) {
+        $event eq '_start' || $event eq '_stop' and next;
+
         Moose::Meta::Class->initialize($class)->add_before_method_modifier(
             $event => sub {
                 my $self = $_[OBJECT];
-                $self->_seq_order( $event, @_[ ARG0 .. $#_ ] );
+                $self->reached_event(
+                    name   => $event,
+                    order  => $count++,
+                    params => [ @_[ ARG0 .. $#_ ] ],
+                );
             }
         );
     }
@@ -47,113 +59,17 @@ before 'STARTALL' => sub {
 
 after 'STOPALL' => sub {
     my $self = shift;
-    $self->_seq_end();
+    my $order = $self->object->{'events_order'}             ?
+                scalar @{ $self->object->{'events_order'} } :
+                0;
+
+    $self->reached_event(
+        name  => '_stop',
+        order => $order,
+    );
+
+    $self->check_all_counts;
 };
-
-sub order {
-    my ( $self, $order, $msg ) = @_;
-    my $new_order = $order + 1;
-    is( $order, $self->order_count, "($order) $msg" );
-    $self->order_count( $new_order );
-    return;
-}
-
-# TODO: max value should only be counted once
-# this can be done via trigger() perhaps
-sub _seq_order {
-    my ( $self, $event, @args ) = @_;
-    my $value = $self->seq_ordering->{$event} || q{};
-
-    # checking sequences
-    if ( ref $value eq 'ARRAY' ) {
-        # event dependencies
-        $self->_seq_check_deps( $value, $event );
-    } elsif ( ref $value eq 'HASH' ) {
-        # mixture of sub counting and event dependencies
-        # checking deps, setting max value
-        if ( keys %{$value} > 1 ) {
-            carp "Skipping $event, too many definitions.\n";
-            return;
-        }
-
-        my ( $max, $array ) = each %{$value};
-
-        $self->_seq_check_deps( $array, $event );
-        $self->track_seq->{$event}{'max'} = $max;
-    } elsif ( ! ref $value ) {
-        # just setting the max value for each sub
-        $self->track_seq->{$event}{'max'} = $value;
-    } else {
-        carp "Problem with value: $value\n";
-    }
-
-    # checking parameter
-    if ( my $event_params = $self->event_params->{$event} ) {
-        my $current_params  = @args ? \@args : [];
-
-        # event_params defined, we can check
-        if ( $self->event_params_type eq 'ordered' ) {
-            my $expected_params = shift @{$event_params} || [];
-
-            cmp_bag(
-                $current_params,
-                $expected_params,
-                "($event) Correct params",
-            );
-        } elsif ( my $type = $self->event_params_type eq 'unordered' ) {
-            my $okay = 0;
-
-            foreach my $expected_params ( @{$event_params} ) {
-                if ( eq_deeply(
-                        $current_params,
-                        bag(@{$expected_params}) ) ) {
-                    $okay++;
-                }
-            }
-
-            ok( $okay, "($event) Correct [unordered] params" );
-        } else {
-            carp "Unknown event_params_type: $type\n";
-        }
-    }
-
-    $self->track_seq->{$event}{'cur'}++;
-    return;
-}
-
-sub _seq_check_deps {
-    my ( $self, $got_deps, $event ) = @_;
-    my @exp_deps = keys %{ $self->track_seq };
-    my @bad      = ();
-
-    foreach my $dep ( @{$got_deps} ) {
-        if ( none { $dep eq $_ } @exp_deps ) {
-            push @bad, $dep;
-        }
-    }
-
-    my $data  = join ', ', map { qq{"$_"} } @bad;
-    my $extra = scalar @bad ? " [$data missing]" : q{};
-    ok( ! scalar @bad, "Correct sequence for $event" . $extra );
-
-    return;
-}
-
-# TODO: refactoring plzkthx
-sub _seq_end {
-    my $self = shift;
-    # now we can check th sub counting
-    foreach my $event ( keys %{ $self->seq_ordering } ) {
-        $self->track_seq->{$event}{'max'} || next;
-
-        is(
-            $self->track_seq->{$event}{'cur'},
-            $self->track_seq->{$event}{'max'},
-            "($event) Correct number of runs",
-        );
-
-    }
-}
 
 no Moose::Role;
 1;
