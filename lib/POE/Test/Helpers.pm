@@ -377,14 +377,174 @@ Same thing, just without having a specific order of sets of events.
 
 =back
 
-This module allows to do all those things using a simple L<Moose> Role.
-
-In order to use it, you must consume the role (using I<with>) and then change
-the following attributes.
-
-=head1 Attributes
+This module allows to do all those things using a simple API.
 
 =head1 METHODS
+
+=head2 spawn
+
+Creates a new L<POE::Session> that manages in the background the tests. If you
+wish not to create a session, but manage things yourself, check C<new> below and
+the additionally available methods.
+
+Accepts the following options:
+
+=head3 run
+
+A callback to create your session. This is required so POE::Test::Helpers could
+hook up to your code internally without you having to set up hooks for it.
+
+The callback is expected to return the session object. This means that you can
+either provide a code reference to your C<< POE::Session->create() >> call or
+you could set up an arbitrary code reference that just returns a session object
+you want to monitor.
+
+    use POE::Test::Helpers;
+
+    # we want to test Our::Module
+    POE::Test::Helpers->spawn(
+        run => sub { Our::Module->spawn( ... ) },
+        ...
+    );
+
+    # or, if we want to set up the session ourselves in more intricate ways
+    my $object = Our::Module->new( ... );
+    my $code   = sub { $object->create_session };
+
+    POE::Test::Helpers->spawn(
+        run => $code,
+        ...
+    );
+
+In case you want to simply run a test in an asynchronous way (and that is why
+you're using POE), you could do it this way:
+
+    use POE::Test::Helpers;
+
+    sub start {
+        # POE code
+        $_[KERNEL]->yield('next');
+    }
+
+    sub next {
+        # POE code
+    }
+
+    # now provide POE::Test::Helpers with a coderef that creates a POE::Session
+    POE::Test::Helpers->spawn(
+        run => sub {
+            POE::Session->create(
+                inline_states => [ qw/ _start next / ],
+            );
+        },
+    );
+
+=head3 tests
+
+Describes what tests should be done. You need to provide each event that will be
+tested and what is tested on it and how. There are a lot of different tests that
+are available for you.
+
+You can provide multiple tests per event, as much as you want.
+
+    POE::Test::Helpers->spawn(
+        run   => $run_method,
+        tests => {
+            # testing that "next" was run once
+            next => { count => 1 },
+
+            # testing that "more" wasn't run at all
+            more => { count => 0 },
+
+            # testing that "again" was run 3 times
+            # and that "next" was run beforehand
+            again => {
+                count => 3,
+                deps  => ['next'],
+            },
+
+            # testing that "last" was run 4th
+            # and what were the subroutine parameters each time
+            last => {
+                order  => 3, # 0 is first, 1 is second...
+                params => [ [ 'first', 'params' ], ['second'] ],
+            },
+        },
+    );
+
+=head3 params_type
+
+Ordinarily, the params are checked in an I<ordered> fashion. This means that it
+checks the first ones against the first arrayref, the second one against the
+third and so on.
+
+However, sometimes you just want to provide a few sets of I<possible> parameters
+which means it I<might> be one of these, but necessarily in this order.
+
+This helps in case of race conditions when you don't know what comes first and
+frankly don't even care.
+
+You can change this simply by setting this attribute to C<unordered>.
+
+    use POE::Test::Helpers;
+
+    POE::Test::Helpers->spawn(
+        run          => $run_method,
+        event_params => 'unordered',
+        tests        => {
+            checks => {
+                # either called with "now" or "then" parameters
+                # doesn't matter the order
+                params => [ ['now'], ['then'] ],
+            },
+        },
+    );
+
+=head2 new
+
+Creates an instance of the underlying object. Takes the exact same attributes as
+C<spawn> above but does B<not> create a L<POE::Session>. This is useful if you
+want to embed the API and use it elsewhere.
+
+This is what L<POE::Test::Helpers::MooseRole> uses.
+
+=head2 reached_event
+
+A method of the underlying object that is injected into any event you want to
+test in the session returned by the C<run> attribute.
+
+To use it you must send it the information of the event you're in.
+
+    $object->reached_event(
+        name   => 'special',
+        order  => 3, # we're 4th (counting starts at 0)
+        params => [ @_[ ARG0 .. $# ] ], # if any
+    );
+
+=head2 check_deps
+
+A method of the underlying object that runs a check of the event dependencies
+against the tests that were given.
+
+=head2 check_order
+
+A method of the underlying object that runs a check of the order of events
+against the tests that were given.
+
+=head2 check_params
+
+A method of the underlying object that runs a check of the parameters of events
+against the tests that were given.
+
+=head2 check_all_counts
+
+A method of the underlying object that requests to run count checks for every
+event.
+
+=head2 check_count
+
+A method of the underlying object that runs a check of the events' runtime count
+against the tests that were given.
 
 =head1 AUTHOR
 
@@ -392,11 +552,7 @@ Sawyer, C<< <xsawyerx at cpan.org> >>
 
 =head1 BUGS
 
-Please report any bugs or feature requests to
-C<bug-poe-test-simple at rt.cpan.org>, or through the web interface at
-L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=POE-Test-Helpers>.  I will be
-notified, and then you'll automatically be notified of progress on your bug as I
-make changes.
+Please use the Github Issues tracker.
 
 =head1 SUPPORT
 
