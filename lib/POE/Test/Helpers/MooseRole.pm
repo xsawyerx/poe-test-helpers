@@ -78,19 +78,15 @@ __END__
 
 =head1 SYNOPSIS
 
-This module provides a Moose role to allow you to test your POE code.
-
-Currently it's best used with L<MooseX::POE> but L<POE::Session> code is also
-doable.
-
-Perhaps a little code snippet.
+This provides a L<Moose> role for any L<MooseX::POE> applications.
 
     package MySession;
     use MooseX::POE;
-    with 'POE::Test::Helpers';
+    with 'POE::Test::Helpers::MooseRole';
 
-    has '+seq_ordering' => ( default => sub { {
-        last => { 1 => ['next'] },
+    has '+tests' => ( default => sub { {
+        next => { count => 1 },
+        last => { count => 1, deps => ['next'] },
     } } );
 
     event 'START' => sub {
@@ -106,125 +102,44 @@ Perhaps a little code snippet.
     };
 
     package main;
-    use Test::More tests => 2;
+    use Test::More tests => 3;
     use POE::Kernel;
     MySession->new();
     POE::Kernel->run();
 
     ...
 
-Testing event-based programs is not trivial at all. There's a lot of hidden race
-conditions and unknown behavior afoot. Usually we separate the testing to
-components, subroutines and events. However, as good as it is (and it's good!),
-it doesn't give us the exact behavior we'll get from the application once
-running.
-
-There are also a lot of types of tests that we would want to run, such as:
-
-=over 4
-
-=item * Ordered Events:
-
-Did every event run in the specific ordered I wanted it to?
-
-I<(maybe some event was called first instead of third...)>
-
-=item * Sequence Ordered Events:
-
-Declaring dependency events for tested events.
-
-I<(an event is only okay if the preceeding events ran first)>
-
-=item * Event Counting:
-
-How many times can each event run?
-
-I<(this event can be run only 4 times, no more, no less)>
-
-=item * Ordered Event Parameters:
-
-Checking specific parameters an event received, supporting multiple options.
-
-I<(did this event get the right parameters for each call?)>
-
-=item * Unordered Event Parameters:
-
-Same thing, just without having a specific order of sets of events.
-
-=back
-
-This module allows to do all those things using a simple L<Moose> Role.
-
 In order to use it, you must consume the role (using I<with>) and then change
 the following attributes.
 
 =head1 Attributes
 
-=head2 seq_ordering
+=head2 tests
 
-This is a hash reference which sets the number of times each event can be run
-and/or the event that had to come first before the event could be run. That is,
-if you have an event "world", you can specify that "world" can only be run once,
-or can only be run twice. You can instead specify that "world" can only be run
-after a different event - "hello" - has been run.
+This is a hash reference that includes all the tests you want to run. You should
+read the documentation in L<POE::Test::Helpers> to understand what are the
+accepted formats.
 
 Here are some examples:
 
-    has '+seq_ordering' => ( default => sub { {
-        hello => 1,                  # hello can only be run once
-        there => ['hello'],          # there can only be run after hello
-        world => { 2 => ['hello'] }, # world runs twice, only after hello
+    has '+tests' => ( default => sub { {
+        hello => { count  => 1         },
+        there => { params => ['hello'] },
+        world => {
+            count  => 2,
+            params => ['hello'],
+        },
     } } );
 
-One thing to remember is that event dependencies are not direct. That is, in the
-above example, "world" can be run right after "there" but as long as "hello" was
-run sometime prior to that, it will be okay. That is, sequence ordering is not
-strict.
-
-=head2 event_params
-
-This is a hash reference which sets the parameters each event is expecting. By
-default, this parameters must be consecutive. That is, if there are two sets of
-parameters, the first one is what's tested when the event is run for the first
-time and the second one will be tested when the event is run the second time. If
-this is troublesome for you, check the next attribute, you'll enjoy that.
-
-    has '+event_params' => ( default => sub { {
-        goodbye => [ [ 'cruel',  'world' ] ],
-        hello   => [ [ 'ironic', 'twist' ] ],
-        special => [ [ 'params', 'for', first', 'run' ], [ 'more', 'params' ] ],
-    } } );
-
-You'll notice one weird thing: two array refs. The reason is actually very
-simple. This test checks each parameter separately, so you specify sets of
-parameters, each set for a different run. Thus, each set is defined in an array
-ref. Because of this, even if you're only giving one set of params, it needs to
-be encapsulated in an array ref. This might change in the future, if anyone will
-care enough.
-
-=head2 event_params_type
+=head2 params_type
 
 This is a simple string which controls how the event_params will go. Meanwhile
-it can only be set to "ordered" and "unordered". This might change in the future
-or could be replaced with "event_params_ordered" boolean or something. Be
-warned.
+it can only be set to "ordered" and "unordered". This might change in the
+future, be warned.
 
 Basically this means that you don't care about the order of how the parameters
 get there, but only that whenever the event was run, it had one of the sets of
 parameters.
-
-=head1 METHODS
-
-=head2 order
-
-Simple ordered tests can also be done using this framework, but are less
-intuitive. In order to set orders of events, a method has to be run. I'm sure
-this will be changed, so stay tuned.
-
-    event 'example' => sub {
-        my $self = $_[OBJECT];
-        $self->order( 0, 'Example runs first!' );
-    };
 
 =head1 AUTHOR
 
@@ -286,14 +201,4 @@ Really great people and constantly helping me with stuff, including one of the
 core principles in this module.
 
 =back
-
-=head1 COPYRIGHT & LICENSE
-
-Copyright 2009 Sawyer, all rights reserved.
-
-This program is free software; you can redistribute it and/or modify it
-under the terms of either: the GNU General Public License as published
-by the Free Software Foundation; or the Artistic License.
-
-See http://dev.perl.org/licenses/ for more information.
 

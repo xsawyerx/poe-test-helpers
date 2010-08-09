@@ -357,7 +357,7 @@ only run after C<get_main_status> ran. In event-based programming, you would
 give up the idea of testing this possible race condition, but with
 Test::POE::Helpers you can test it.
 
-I<< C<run_updates> can only run after C<get_main_status> >
+I<< C<run_updates> can only run after C<get_main_status> >>
 
 =item * Event Counting:
 
@@ -446,14 +446,4 @@ Really great people and constantly helping me with stuff, including one of the
 core principles in this module.
 
 =back
-
-=head1 COPYRIGHT & LICENSE
-
-Copyright 2009-2010 Sawyer, all rights reserved.
-
-This program is free software; you can redistribute it and/or modify it
-under the terms of either: the GNU General Public License as published
-by the Free Software Foundation; or the Artistic License.
-
-See http://dev.perl.org/licenses/ for more information.
 
