@@ -298,10 +298,8 @@ __END__
 This module provides you with a framwork to easily write tests for your POE
 code.
 
-The main purpose of this module is to be non-instrusive (or abstrusive) and
+The main purpose of this module is to be non-instrusive (nor abstrusive) and
 allow you to write your code without getting in your way.
-
-    package MySession;
 
     use Test::More tests => 1;
     use POE;
