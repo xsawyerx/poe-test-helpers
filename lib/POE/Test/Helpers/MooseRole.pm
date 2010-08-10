@@ -1,3 +1,4 @@
+use strictures 1;
 package POE::Test::Helpers::MooseRole;
 # ABSTRACT: A Moose role for POE::Test::Helpers for MooseX::POE
 

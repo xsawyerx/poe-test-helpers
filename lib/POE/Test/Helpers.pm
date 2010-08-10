@@ -1,7 +1,6 @@
+use strictures 1;
 package POE::Test::Helpers;
 # ABSTRACT: Testing framework for POE
-
-use strictures 1;
 
 use Carp;
 use parent 'Test::Builder::Module';
