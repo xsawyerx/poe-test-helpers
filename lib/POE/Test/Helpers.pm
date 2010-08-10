@@ -439,8 +439,8 @@ you're using POE), you could do it this way:
 =head3 tests
 
 Describes what tests should be done. You need to provide each event that will be
-tested and what is tested on it and how. There are a lot of different tests that
-are available for you.
+tested and what is tested with it and how. There are a lot of different tests
+that are available for you.
 
 You can provide multiple tests per event, as much as you want.
 
@@ -473,10 +473,10 @@ You can provide multiple tests per event, as much as you want.
 
 Ordinarily, the params are checked in an I<ordered> fashion. This means that it
 checks the first ones against the first arrayref, the second one against the
-third and so on.
+second and so on.
 
 However, sometimes you just want to provide a few sets of I<possible> parameters
-which means it I<might> be one of these, but necessarily in this order.
+which means it I<might> be one of these, but not necessarily in this order.
 
 This helps in case of race conditions when you don't know what comes first and
 frankly don't even care.
