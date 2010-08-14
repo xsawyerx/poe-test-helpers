@@ -2,14 +2,18 @@ Revision history for POE-Test-Helpers
 
 # Day/Month/Year
 
-1.09    11.08.09
+1.10    xx.08.10
+        * Separating tests
+        * Corrected Changelog dates
+
+1.09    11.08.10
         * Removed Build.PL creation for RT #60210
         (it wasn't really necessary)
 
-1.08    10.08.09
+1.08    10.08.10
         * POD fixups
 
-1.07    09.08.09
+1.07    09.08.10
         [ HUGE REWRITE ]
         * Now POE::Test::Helpers works for regular POE
         * MUCH much cleaner code
