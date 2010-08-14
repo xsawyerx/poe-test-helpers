@@ -1,8 +1,6 @@
 use strictures 1;
 package POE::Test::Helpers::API;
 # ABSTRACT: Documentation of POE::Test::Helpers API
-use Carp ();
-Carp::confess "don't use this, just read it!";
 1;
 
 __END__
