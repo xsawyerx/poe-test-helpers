@@ -295,7 +295,7 @@ __END__
 
 =head1 SYNOPSIS
 
-This module provides you with a framwork to easily write tests for your POE
+This module provides you with a framework to easily write tests for your POE
 code.
 
 The main purpose of this module is to be non-instrusive (nor abstrusive) and
