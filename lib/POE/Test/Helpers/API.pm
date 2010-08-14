@@ -1,6 +1,11 @@
-=head1 NAME
+use strictures 1;
+package POE::Test::Helpers::API;
+# ABSTRACT: Documentation of POE::Test::Helpers API
+use Carp ();
+Carp::confess "don't use this, just read it!";
+1;
 
-Documentation of POE::Test::Helpers' API.
+__END__
 
 =head1 DESCRIPTION
 
