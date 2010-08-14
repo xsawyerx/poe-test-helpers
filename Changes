@@ -4,7 +4,7 @@ Revision history for POE-Test-Helpers
 
 1.10    14.08.10
         * Separating tests
-        * Separating API documentation to different POD not to confuse beginners
+        * Separating API documentation not to confuse beginners
         * Corrected Changelog dates
 
 1.09    11.08.10
