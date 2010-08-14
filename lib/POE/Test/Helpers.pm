@@ -499,53 +499,35 @@ You can change this simply by setting this attribute to C<unordered>.
 
 =head2 new
 
-Creates an instance of the underlying object. Takes the exact same attributes as
-C<spawn> above but does B<not> create a L<POE::Session>. This is useful if you
-want to embed the API and use it elsewhere.
-
-This is what L<POE::Test::Helpers::MooseRole> uses.
+Creates the underlying object. Please review L<POE::Test::Helpers::API> for this.
 
 =head2 reached_event
 
-A method of the underlying object that is injected into any event you want to
-test in the session returned by the C<run> attribute.
-
-To use it you must send it the information of the event you're in.
-
-    $object->reached_event(
-        name   => 'special',
-        order  => 3, # we're 4th (counting starts at 0)
-        params => [ @_[ ARG0 .. $# ] ], # if any
-    );
+Underlying object method. Please review L<POE::Test::Helpers::API> for this.
 
 =head2 check_deps
 
-A method of the underlying object that runs a check of the event dependencies
-against the tests that were given.
+Underlying object method. Please review L<POE::Test::Helpers::API> for this.
 
 =head2 check_order
 
-A method of the underlying object that runs a check of the order of events
-against the tests that were given.
+Underlying object method. Please review L<POE::Test::Helpers::API> for this.
 
 =head2 check_params
 
-A method of the underlying object that runs a check of the parameters of events
-against the tests that were given.
+Underlying object method. Please review L<POE::Test::Helpers::API> for this.
 
 =head2 check_all_counts
 
-A method of the underlying object that requests to run count checks for every
-event.
+Underlying object method. Please review L<POE::Test::Helpers::API> for this.
 
 =head2 check_count
 
-A method of the underlying object that runs a check of the events' runtime count
-against the tests that were given.
+Underlying object method. Please review L<POE::Test::Helpers::API> for this.
 
 =head1 AUTHOR
 
-Sawyer, C<< <xsawyerx at cpan.org> >>
+Sawyer X, C<< <xsawyerx at cpan.org> >>
 
 =head1 BUGS
 
