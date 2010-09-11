@@ -329,6 +329,8 @@ allow you to write your code without getting in your way.
         },
     );
 
+    POE::Kernel->run;
+
 Testing event-based programs is not trivial at all. There's a lot of hidden race
 conditions and unknown behavior afoot. Usually we separate the testing to
 components, subroutines and events. However, as good as it is (and it's good!),
@@ -413,6 +415,8 @@ you want to monitor.
         ...
     );
 
+    POE::Kernel->run;
+
 In case you want to simply run a test in an asynchronous way (and that is why
 you're using POE), you could do it this way:
 
@@ -435,6 +439,8 @@ you're using POE), you could do it this way:
             );
         },
     );
+
+    POE::Kernel->run;
 
 =head3 tests
 
@@ -469,6 +475,8 @@ You can provide multiple tests per event, as much as you want.
         },
     );
 
+    POE::Kernel->run;
+
 =head3 params_type
 
 Ordinarily, the params are checked in an I<ordered> fashion. This means that it
@@ -497,9 +505,12 @@ You can change this simply by setting this attribute to C<unordered>.
         },
     );
 
+    POE::Kernel->run;
+
 =head2 new
 
-Creates the underlying object. Please review L<POE::Test::Helpers::API> for this.
+Creates the underlying object. Please review L<POE::Test::Helpers::API> for
+this.
 
 =head2 reached_event
 
