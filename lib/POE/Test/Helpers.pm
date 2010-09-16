@@ -260,11 +260,25 @@ sub _start {
     # if exists key in test, add a test for it for them
     $self->{'session_id'} = $_[SESSION]->ID();
 
-    my @subs_to_override = keys %{ $self->{'tests'} };
-
     my $callback        = $self->{'run'};
     my $session_to_test = $callback->();
-    my $internal_data   = $session_to_test->[KERNEL];
+
+    if ( ref $session_to_test eq 'ARRAY' ) {
+        foreach my $session ( @{$session_to_test} ) {
+            $self->override_session($session);
+        }
+    } else {
+        $self->override_session($session_to_test);
+    }
+
+}
+
+sub override_session {
+    my $self             = shift;
+    my $session_to_test  = shift;
+    my $internal_data    = $session_to_test->[KERNEL];
+    my @subs_to_override = keys %{ $self->{'tests'} };
+
 
     # 0 is done by _start in _child event, so we start from 1
     my $count = 1;
