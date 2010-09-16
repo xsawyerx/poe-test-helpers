@@ -2,6 +2,9 @@ Revision history for POE-Test-Helpers
 
 # Day/Month/Year
 
+1.20    xx.09.10
+        * Allow multiple POE::Sessions returned by 'run' attr
+
 1.11    12.09.10
         * Adding POE kernel run to synopsis for RT #61274
 
